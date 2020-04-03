@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros">
+    <KITOutputDir>$(ProjectDir)..\KIT.Output\</KITOutputDir>
+    <WIROutputDir>$(ProjectDir)..\WIR.Output\</WIROutputDir>
+    <KITEngine>$(ProjectDir)..\KIT.Engine\</KITEngine>
+    <WIRFramework>$(ProjectDir)..\WIR.Framework\</WIRFramework>
+    <VulkanSDK>$(VULKAN_SDK)</VulkanSDK>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemDefinitionGroup />
+  <ItemGroup>
+    <BuildMacro Include="KITOutputDir">
+      <Value>$(KITOutputDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="WIROutputDir">
+      <Value>$(WIROutputDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="KITEngine">
+      <Value>$(KITEngine)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="WIRFramework">
+      <Value>$(WIRFramework)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="VulkanSDK">
+      <Value>$(VulkanSDK)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+  </ItemGroup>
+</Project>
