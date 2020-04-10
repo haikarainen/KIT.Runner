@@ -1,0 +1,22 @@
+﻿---
+BasedOnStyle: LLVM
+AlignConsecutiveAssignments: 'false'
+AlignConsecutiveDeclarations: 'false'
+AllowShortBlocksOnASingleLine: 'false'
+AllowShortCaseLabelsOnASingleLine: 'true'
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLambdasOnASingleLine: Inline
+AllowShortLoopsOnASingleLine: 'false'
+AlwaysBreakTemplateDeclarations: 'Yes'
+BreakBeforeBraces: Allman
+ColumnLimit: '0'
+CompactNamespaces: 'false'
+IndentWidth: '2'
+Language: Cpp
+NamespaceIndentation: All
+PointerAlignment: Right
+TabWidth: '2'
+UseTab: Never
+
+...

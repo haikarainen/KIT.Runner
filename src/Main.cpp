@@ -4,7 +4,7 @@
 #include "Command_TestCompression.hpp"
 #include "Command_ImportMesh.hpp"
 #include "Command_ImportPhysicsMesh.hpp"
-#include "Command_CreateTestMaterial.hpp"
+#include "Command_CreateDefaultMaterial.hpp"
 #include "Command_ImportTexture.hpp"
 
 
@@ -32,7 +32,7 @@ int main(int argc, char **argv)
   registerCommand(new Command_ImportMesh());
   registerCommand(new Command_ImportPhysicsMesh());
   registerCommand(new Command_ImportTexture());
-  registerCommand(new Command_CreateTestMaterial());
+  registerCommand(new Command_CreateDefaultMaterial());
 
   std::vector<std::string> args;
   for (int32_t i = 0; i < argc; i++)

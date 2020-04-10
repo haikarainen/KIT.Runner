@@ -6,8 +6,17 @@
 #include <WIR/Math.hpp>
 #include <WIR/Stream.hpp>
 
-#include <vulkan/vulkan.h>
 
+#include <WIR/XML/XMLDocument.hpp>
+#include <WIR/XML/XMLParser.hpp>
+#include <WIR/XML/XMLElement.hpp>
+#include <WIR/XML/XMLAttribute.hpp>
+
+#include <Odin/Format.hpp>
+#include <Odin/Filter.hpp>
+#include <Odin/EdgeSampling.hpp>
+
+#include <cinttypes>
 #include "stb_image.h"
 
 Command_ImportTexture::~Command_ImportTexture()
@@ -22,70 +31,241 @@ std::string const Command_ImportTexture::name() const
 
 bool Command_ImportTexture::execute(std::vector<std::string> args) const
 {
-  auto colorSpace = args[2];
-  auto filtering = args[3];
-  auto clampMode = args[4];
+  auto importFile = args[2];
 
-  auto inputFile = wir::File(args[5]);
-  if (!inputFile.exist())
+  wir::XMLDocument document;
+  wir::XMLParser parser;
+  if (!parser.loadFromFile(importFile, document))
   {
-    LogError("Input file does not exist (%s)", inputFile.path().c_str());
+    LogError("Failed to parse xml");
     return false;
   }
 
-  auto outputFile = wir::File(args[6]);
-  if (!outputFile.createPath())
+  auto roots = document.rootElements();
+  if (roots.size() != 1)
   {
-    LogError("Failed to create path for output file (%s)", outputFile.path().c_str());
+    LogError("invalid material spec");
     return false;
   }
 
-  int x = 0, y = 0, comp = 0;
-  //stbi_set_flip_vertically_on_load(true);
-  uint8_t *dataPtr = stbi_load(inputFile.path().c_str(), &x, &y, &comp, 4);
-  if (!dataPtr)
+  auto root = roots[0];
+
+  if (root->name() != "Texture")
   {
-    LogError("stbi_load failed");
+    LogError("invalid material spec");
+    return false;
+  }
+  std::string outputFile;
+  if (!root->string("OutputFile", outputFile))
+  {
+    LogError("No output file specified");
     return false;
   }
 
-  uint64_t dataSize = x * y * 4;
+  auto outputFilef = wir::File(outputFile);
+  if (!outputFilef.createPath())
+  {
+    LogError("Failed to create path for output file (%s)", outputFilef.path().c_str());
+    return false;
+  }
 
-  wir::Stream dataStream;
+  std::string sourceFile;
+  if (!root->string("SourceFile", sourceFile))
+  {
+    LogError("No source file specified");
+    return false;
+  }
 
-  glm::uvec3 extents;
-  extents.x = x;
-  extents.y = y;
-  extents.z = 1;
+  auto sourceFilef = wir::File(sourceFile);
+  if (!sourceFilef.exist())
+  {
+    LogError("Source file doesn't exist");
+    return false;
+  }
 
-  uint32_t mipLevels = 1;
-  uint32_t arrayLayers = 1;
-  int64_t format = colorSpace == "linear" ? VK_FORMAT_R8G8B8A8_UINT : VK_FORMAT_R8G8B8A8_SRGB;
-  int64_t imageType = VK_IMAGE_TYPE_2D;
-  int64_t viewType = VK_IMAGE_VIEW_TYPE_2D;
-  int64_t samplerMin = filtering == "nearest" ? VK_FILTER_NEAREST : VK_FILTER_LINEAR;
-  int64_t samplerMag = filtering == "nearest" ? VK_FILTER_NEAREST : VK_FILTER_LINEAR;
-  int64_t samplerMip = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-  int64_t samplerAddress = clampMode == "repeat" ? VK_SAMPLER_ADDRESS_MODE_REPEAT : VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-  dataStream << extents << mipLevels << arrayLayers << format << imageType << viewType << samplerMin << samplerMag << samplerMip << samplerAddress;
+  std::string colorspace = "srgb";
+  root->string("Colorspace", colorspace);
 
-  dataStream << dataSize;
-  dataStream.write(dataPtr, dataSize);
+  bool srgb = wir::strToLower(colorspace) == "srgb";
+  bool hdr = wir::strToLower(sourceFilef.extension()) == ".hdr";
+  uint32_t format = hdr ? odin::F_RGBA32_SFLOAT : srgb ? odin::F_RGBA8_SRGB : odin::F_RGBA8_UNORM;
 
-  stbi_image_free(dataPtr);
+  int64_t levels = 0;
+  root->integer("Levels", levels);
 
-  if (!utils::writeAsset(outputFile.path(), "kit::Texture", dataStream))
+  uint32_t loadLevels = glm::max(1U, (uint32_t)levels);
+
+
+  std::string filter = "anisotropic";
+  uint32_t filteri = odin::F_Anisotropic;
+  root->string("Filter", filter);
+  if (wir::strToLower(filter) == "anisotropic")
+  {
+    filteri = odin::F_Anisotropic;
+  }
+  else if (wir::strToLower(filter) == "trilinear")
+  {
+    filteri = odin::F_Trilinear;
+  }
+  else if (wir::strToLower(filter) == "bilinear")
+  {
+    filteri = odin::F_Bilinear;
+  }
+  else if (wir::strToLower(filter) == "nearest")
+  {
+    filteri = odin::F_Nearest;
+  }
+  else 
+  {
+    LogError("Invalid filter, possible options: anisotropic, trilinear, bilinear, nearest");
+    return false;
+  }
+
+
+  std::string es = "clamp";
+  uint32_t esi = odin::ES_Clamp;
+  root->string("Filter", es);
+  if (wir::strToLower(es) == "clamp")
+  {
+    esi = odin::ES_Clamp;
+  }
+  else if (wir::strToLower(es) == "clampmirrored")
+  {
+    esi = odin::ES_ClampMirrored;
+  }
+  else if (wir::strToLower(es) == "repeat")
+  {
+    esi = odin::ES_Repeat;
+  }
+  else if (wir::strToLower(es) == "repeatmirrored")
+  {
+    esi = odin::ES_RepeatMirrored;
+  }
+  else
+  {
+    LogError("Invalid edge sampling, possible options: clamp, clampmirrored, repeat, repeatmirrored");
+    return false;
+  }
+
+  double maxAniso = 16.0f;
+  root->decimal("MaxAnisotrophy", maxAniso);
+  float maxAnisoF = glm::clamp((float)maxAniso, 1.0f, 16.0f);
+
+  
+  wir::Stream assetData;
+
+
+  if (hdr)
+  {
+    int x = 0, y = 0, c = 0;
+    float *data = stbi_loadf(sourceFilef.path().c_str(), &x, &y, &c, 4);
+    if (!data)
+    {
+      LogError("stbi failed");
+      return false;
+    }
+
+    uint64_t dataSize = x * y * 4 * sizeof(float);
+    assetData << format << glm::uvec2(x, y) << uint32_t(levels);
+    assetData << filteri << esi << maxAnisoF;
+    assetData << dataSize;
+
+    LogNotice("Writing %" PRIu64 " HDR bytes for base mip", dataSize);
+    assetData.write(reinterpret_cast<uint8_t *>(data), dataSize);
+    stbi_image_free(data);
+
+    for (uint32_t i = 1; i < loadLevels; i++)
+    {
+      std::string level;
+      if (!root->string(wir::formatString("Level%u", i), level))
+      {
+        LogError("Level %u not specified", i);
+        return false;
+      }
+
+      auto levelf = wir::File(level);
+      if (!levelf.exist())
+      {
+        LogError("Specified level file doesn't exist, %u", i);
+        return false;
+      }
+      x = 0;
+      y = 0;
+      c = 0;
+      data = stbi_loadf(levelf.path().c_str(), &x, &y, &c, 4);
+      if (!data)
+      {
+        LogError("stbi failed");
+        return false;
+      }
+      dataSize = x * y * 4 * sizeof(float);
+      assetData << dataSize;
+
+      LogNotice("Writing %" PRIu64 " HDR bytes for mip level %u", dataSize, i);
+      assetData.write(reinterpret_cast<uint8_t *>(data), dataSize);
+      stbi_image_free(data);
+    }
+  }
+  else 
+  {
+    int x = 0, y = 0, c = 0;
+    uint8_t *data = stbi_load(sourceFilef.path().c_str(), &x, &y, &c, 4);
+    if (!data)
+    {
+      LogError("stbi failed");
+      return false;
+    }
+
+    uint64_t dataSize = x * y * 4 * sizeof(uint8_t);
+    assetData << format << glm::uvec2(x, y) << uint32_t(levels);
+    assetData << filteri << esi << maxAnisoF;
+    assetData << dataSize;
+
+    LogNotice("Writing %" PRIu64 " LDR bytes for base mip", dataSize);
+    assetData.write(data, dataSize);
+    stbi_image_free(data);
+
+    for (uint32_t i = 1; i < loadLevels; i++)
+    {
+      std::string level;
+      if (root->string(wir::formatString("Level%u", i), level))
+      {
+        LogError("Level %u not specified", i);
+        return false;
+      }
+
+      auto levelf = wir::File(level);
+      if (!levelf.exist())
+      {
+        LogError("Specified level file doesn't exist, %u", i);
+        return false;
+      }
+
+      data = stbi_load(levelf.path().c_str(), &x, &y, &c, 4);
+      if (!data)
+      {
+        LogError("stbi failed");
+        return false;
+      }
+      dataSize = x * y * 4 * sizeof(float);
+      assetData << dataSize;
+
+      LogNotice("Writing %" PRIu64 " LDR bytes for mip level %u", dataSize, i);
+      assetData.write(data, dataSize);
+      stbi_image_free(data);
+    }
+  }
+
+  if (!utils::writeAsset(outputFilef.path(), "kit::Texture", assetData))
   {
     LogError("writeAsset failed");
     return false;
   }
-
-  LogNotice("Imported texture %s (%ux%u)", inputFile.path().c_str(), x, y);
 
   return true;
 }
 
 uint64_t Command_ImportTexture::requiredArguments() const
 {
-  return 7; // 2  + colorspace + filtering + clampmode + inputfile + outputfile
+  return 3; // 2 + inputfile + outputfile
 }

@@ -2,10 +2,10 @@
 
 #include "Command.hpp"
 
-class Command_CreateTestMaterial : public Command
+class Command_CreateDefaultMaterial : public Command
 {
 public:
-  virtual ~Command_CreateTestMaterial();
+  virtual ~Command_CreateDefaultMaterial();
 
   virtual std::string const name() const override;
   virtual bool execute(std::vector<std::string> args) const override;;

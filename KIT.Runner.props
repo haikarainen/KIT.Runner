@@ -2,19 +2,14 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros">
-    <KITOutputDir>$(ProjectDir)..\KIT.Output\</KITOutputDir>
-    <WIROutputDir>$(ProjectDir)..\WIR.Output\</WIROutputDir>
+    <WIROutputDir>$(ProjectDir)..\Workspace\Output\</WIROutputDir>
     <KITEngine>$(ProjectDir)..\KIT.Engine\</KITEngine>
     <WIRFramework>$(ProjectDir)..\WIR.Framework\</WIRFramework>
-    <VulkanSDK>$(VULKAN_SDK)</VulkanSDK>
+    <Odin>$(ProjectDir)..\Odin\</Odin>
   </PropertyGroup>
   <PropertyGroup />
   <ItemDefinitionGroup />
   <ItemGroup>
-    <BuildMacro Include="KITOutputDir">
-      <Value>$(KITOutputDir)</Value>
-      <EnvironmentVariable>true</EnvironmentVariable>
-    </BuildMacro>
     <BuildMacro Include="WIROutputDir">
       <Value>$(WIROutputDir)</Value>
       <EnvironmentVariable>true</EnvironmentVariable>
@@ -27,8 +22,8 @@
       <Value>$(WIRFramework)</Value>
       <EnvironmentVariable>true</EnvironmentVariable>
     </BuildMacro>
-    <BuildMacro Include="VulkanSDK">
-      <Value>$(VulkanSDK)</Value>
+    <BuildMacro Include="Odin">
+      <Value>$(Odin)</Value>
       <EnvironmentVariable>true</EnvironmentVariable>
     </BuildMacro>
   </ItemGroup>

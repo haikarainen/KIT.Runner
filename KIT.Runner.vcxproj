@@ -45,11 +45,11 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(KITOutputDir)\bin\$(Configuration)\</OutDir>
+    <OutDir>$(WIROutputDir)\bin\$(Configuration)\</OutDir>
     <IncludePath>$(ProjectDir)include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(KITOutputDir)\bin\$(Configuration)\</OutDir>
+    <OutDir>$(WIROutputDir)\bin\$(Configuration)\</OutDir>
     <IncludePath>$(ProjectDir)include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -58,15 +58,15 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>$(VulkanSDK)\Include;$(KITEngine)extinclude\;$(KITEngine)include\;$(WIRFramework)include\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(Odin)\Include;$(KITEngine)extinclude\;$(KITEngine)include\;$(WIRFramework)include\</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>BT_USE_DOUBLE_PRECISION;_ENABLE_EXTENDED_ALIGNED_STORAGE;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableSpecificWarnings>4250;4251</DisableSpecificWarnings>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(KITOutputDir)\bin\$(Configuration)\;$(WIROutputDir)\bin\$(Configuration)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>KIT.Engine.lib;WIR.Framework.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(WIROutputDir)\bin\$(Configuration)\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Odin.lib;KIT.Engine.lib;WIR.Framework.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -77,37 +77,43 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>$(VulkanSDK)\Include;$(KITEngine)extinclude\;$(KITEngine)include\;$(WIRFramework)include\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(Odin)\Include;$(KITEngine)extinclude\;$(KITEngine)include\;$(WIRFramework)include\</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>BT_USE_DOUBLE_PRECISION;_ENABLE_EXTENDED_ALIGNED_STORAGE;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableSpecificWarnings>4250;4251</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(KITOutputDir)\bin\$(Configuration)\;$(WIROutputDir)\bin\$(Configuration)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>KIT.Engine.lib;WIR.Framework.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(WIROutputDir)\bin\$(Configuration)\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Odin.lib;KIT.Engine.lib;WIR.Framework.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\**\*.cpp" />
+    <ClCompile Include="src\Command_CreateDefaultMaterial.cpp" />
+    <ClCompile Include="src\Command_CreateShaderModule.cpp" />
+    <ClCompile Include="src\Command_ImportMesh.cpp" />
+    <ClCompile Include="src\Command_ImportPhysicsMesh.cpp" />
+    <ClCompile Include="src\Command_ImportTexture.cpp" />
+    <ClCompile Include="src\Command_TestCompression.cpp" />
+    <ClCompile Include="src\Main.cpp" />
+    <ClCompile Include="src\stb_image.cpp" />
+    <ClCompile Include="src\Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\**\*.hpp" />
+    <ClInclude Include="include\Command.hpp" />
+    <ClInclude Include="include\Command_CreateDefaultMaterial.hpp" />
+    <ClInclude Include="include\Command_CreateShaderModule.hpp" />
+    <ClInclude Include="include\Command_ImportMesh.hpp" />
+    <ClInclude Include="include\Command_ImportPhysicsMesh.hpp" />
+    <ClInclude Include="include\Command_ImportTexture.hpp" />
+    <ClInclude Include="include\Command_TestCompression.hpp" />
     <ClInclude Include="include\stb_image.h" />
+    <ClInclude Include="include\Utils.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="KIT.Runner.props" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-    <Import Project="packages\Assimp_native_4.1.4.1.0\build\native\Assimp_native_4.1.targets" Condition="Exists('packages\Assimp_native_4.1.4.1.0\build\native\Assimp_native_4.1.targets')" />
-  </ImportGroup>
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('packages\Assimp_native_4.1.4.1.0\build\native\Assimp_native_4.1.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Assimp_native_4.1.4.1.0\build\native\Assimp_native_4.1.targets'))" />
-  </Target>
 </Project>
