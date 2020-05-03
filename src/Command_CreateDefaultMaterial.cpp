@@ -63,7 +63,11 @@ bool Command_CreateDefaultMaterial::execute(std::vector<std::string> args) const
     return false;
   }
 
-  std::string albedo, normal, metalness, occlusion, roughness;
+  std::string albedo = "Content/DefaultAlbedo.asset",
+              normal = "Content/DefaultNormal.asset",
+              metalness = "Content/DefaultMetalness.asset",
+              occlusion = "Content/DefaultOcclusion.asset",
+              roughness = "Content/DefaultRoughness.asset";
   root->string("Albedo", albedo);
   root->string("Normal", normal);
   root->string("Metalness", metalness);

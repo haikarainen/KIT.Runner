@@ -124,7 +124,7 @@ bool Command_ImportTexture::execute(std::vector<std::string> args) const
 
   std::string es = "clamp";
   uint32_t esi = odin::ES_Clamp;
-  root->string("Filter", es);
+  root->string("EdgeSampling", es);
   if (wir::strToLower(es) == "clamp")
   {
     esi = odin::ES_Clamp;
@@ -151,6 +151,8 @@ bool Command_ImportTexture::execute(std::vector<std::string> args) const
   root->decimal("MaxAnisotrophy", maxAniso);
   float maxAnisoF = glm::clamp((float)maxAniso, 1.0f, 16.0f);
 
+
+  LogNotice("Colorspace: %s, Filter: %s, EdgeSampling: %s, Anisotropic level: %f", colorspace.c_str(), filter.c_str(), es.c_str(), maxAniso);
   
   wir::Stream assetData;
 
@@ -177,7 +179,7 @@ bool Command_ImportTexture::execute(std::vector<std::string> args) const
     for (uint32_t i = 1; i < loadLevels; i++)
     {
       std::string level;
-      if (!root->string(wir::formatString("Level%u", i), level))
+      if (!root->string(wir::format("Level%u", i), level))
       {
         LogError("Level %u not specified", i);
         return false;
@@ -228,7 +230,7 @@ bool Command_ImportTexture::execute(std::vector<std::string> args) const
     for (uint32_t i = 1; i < loadLevels; i++)
     {
       std::string level;
-      if (root->string(wir::formatString("Level%u", i), level))
+      if (root->string(wir::format("Level%u", i), level))
       {
         LogError("Level %u not specified", i);
         return false;
