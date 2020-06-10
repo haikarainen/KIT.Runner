@@ -5,7 +5,9 @@
 #include "Command_ImportMesh.hpp"
 #include "Command_ImportPhysicsMesh.hpp"
 #include "Command_CreateDefaultMaterial.hpp"
+#include "Command_CreateEmptyMaterial.hpp"
 #include "Command_ImportTexture.hpp"
+#include "Command_ImportFont.hpp"
 
 
 #include <KIT/Engine.hpp>
@@ -33,6 +35,8 @@ int main(int argc, char **argv)
   registerCommand(new Command_ImportPhysicsMesh());
   registerCommand(new Command_ImportTexture());
   registerCommand(new Command_CreateDefaultMaterial());
+  registerCommand(new Command_CreateEmptyMaterial());
+  registerCommand(new Command_ImportFont());
 
   std::vector<std::string> args;
   for (int32_t i = 0; i < argc; i++)

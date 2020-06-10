@@ -92,7 +92,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\Command_CreateDefaultMaterial.cpp" />
+    <ClCompile Include="src\Command_CreateEmptyMaterial.cpp" />
     <ClCompile Include="src\Command_CreateShaderModule.cpp" />
+    <ClCompile Include="src\Command_ImportFont.cpp" />
     <ClCompile Include="src\Command_ImportMesh.cpp" />
     <ClCompile Include="src\Command_ImportPhysicsMesh.cpp" />
     <ClCompile Include="src\Command_ImportTexture.cpp" />
@@ -104,7 +106,9 @@
   <ItemGroup>
     <ClInclude Include="include\Command.hpp" />
     <ClInclude Include="include\Command_CreateDefaultMaterial.hpp" />
+    <ClInclude Include="include\Command_CreateEmptyMaterial.hpp" />
     <ClInclude Include="include\Command_CreateShaderModule.hpp" />
+    <ClInclude Include="include\Command_ImportFont.hpp" />
     <ClInclude Include="include\Command_ImportMesh.hpp" />
     <ClInclude Include="include\Command_ImportPhysicsMesh.hpp" />
     <ClInclude Include="include\Command_ImportTexture.hpp" />

@@ -44,7 +44,7 @@ bool Command_ImportTexture::execute(std::vector<std::string> args) const
   auto roots = document.rootElements();
   if (roots.size() != 1)
   {
-    LogError("invalid material spec");
+    LogError("invalid texture spec");
     return false;
   }
 
@@ -52,7 +52,7 @@ bool Command_ImportTexture::execute(std::vector<std::string> args) const
 
   if (root->name() != "Texture")
   {
-    LogError("invalid material spec");
+    LogError("invalid texture spec");
     return false;
   }
   std::string outputFile;
