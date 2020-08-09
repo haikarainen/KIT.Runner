@@ -44,7 +44,7 @@ bool Command_CreateDefaultMaterial::execute(std::vector<std::string> args) const
 
   auto root = roots[0];
 
-  if (root->name() != "DeferredMaterial")
+  if (root->name() != "DefaultMaterial")
   {
     LogError("invalid material spec");
     return false;
@@ -63,11 +63,7 @@ bool Command_CreateDefaultMaterial::execute(std::vector<std::string> args) const
     return false;
   }
 
-  std::string albedo = "Content/DefaultAlbedo.asset",
-              normal = "Content/DefaultNormal.asset",
-              metalness = "Content/DefaultMetalness.asset",
-              occlusion = "Content/DefaultOcclusion.asset",
-              roughness = "Content/DefaultRoughness.asset";
+  std::string albedo, normal, metalness, occlusion, roughness;
   root->string("Albedo", albedo);
   root->string("Normal", normal);
   root->string("Metalness", metalness);
