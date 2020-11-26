@@ -31,7 +31,44 @@ std::string const Command_ImportTexture::name() const
 
 bool Command_ImportTexture::execute(std::vector<std::string> args) const
 {
-  auto importFile = args[2];
+  /*
+   *  If input is a .png:
+   *    if input lacks an .import
+   *      create an import
+   *      set input to newly created import
+   * 
+   *  execute import 
+   * 
+   */
+
+
+  auto inputFile = wir::File(args[2]);
+  if (!inputFile.exist())
+  {
+    LogError("Input file does not exist!");
+    return false;
+  }
+
+  auto importFile = inputFile.path();
+
+  if (inputFile.extension() != ".import")
+  {
+    importFile += ".import";
+
+    if (!wir::File(importFile).exist())
+    {
+      auto inputBase = inputFile.directory().path() + "/" + inputFile.basename();
+
+      std::string importData = wir::format("<Texture SourceFile=\"%s\" OutputFile=\"%s.asset\" Colorspace=\"sRGB\" Filter=\"Anisotropic\" EdgeSampling=\"Clamp\" />", inputFile.name().c_str(), inputFile.basename().c_str());
+      if (!wir::File(importFile).writeString(importData))
+      {
+        LogError("Failed to create import file");
+        return false;
+      }
+    }
+  }
+
+  auto importBase = wir::File(importFile).directory().path();
 
   wir::XMLDocument document;
   wir::XMLParser parser;
@@ -55,6 +92,7 @@ bool Command_ImportTexture::execute(std::vector<std::string> args) const
     LogError("invalid texture spec");
     return false;
   }
+
   std::string outputFile;
   if (!root->string("OutputFile", outputFile))
   {
@@ -62,12 +100,7 @@ bool Command_ImportTexture::execute(std::vector<std::string> args) const
     return false;
   }
 
-  auto outputFilef = wir::File(outputFile);
-  if (!outputFilef.createPath())
-  {
-    LogError("Failed to create path for output file (%s)", outputFilef.path().c_str());
-    return false;
-  }
+  auto outputFilef = wir::File(importBase + "/" + outputFile);
 
   std::string sourceFile;
   if (!root->string("SourceFile", sourceFile))
@@ -76,7 +109,7 @@ bool Command_ImportTexture::execute(std::vector<std::string> args) const
     return false;
   }
 
-  auto sourceFilef = wir::File(sourceFile);
+  auto sourceFilef = wir::File(importBase + "/" + sourceFile);
   if (!sourceFilef.exist())
   {
     LogError("Source file doesn't exist");
@@ -260,7 +293,7 @@ bool Command_ImportTexture::execute(std::vector<std::string> args) const
 
   if (!utils::writeAsset(outputFilef.path(), "kit::Texture", assetData))
   {
-    LogError("writeAsset failed");
+    LogError("writeAsset failed: ", outputFilef.path().c_str());
     return false;
   }
 
