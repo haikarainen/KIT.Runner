@@ -14,6 +14,10 @@
 
 #include <WIR/Error.hpp>
 
+#include <WIR/XML/XMLDocument.hpp>
+#include <WIR/XML/XMLParser.hpp>
+#include <WIR/XML/XMLElement.hpp>
+#include <WIR/XML/XMLAttribute.hpp>
 
 #include <iostream>
 #include <string>
@@ -25,17 +29,21 @@ int main(int argc, char **argv)
 {
 
   std::map<std::string, Command*> commands;
-  auto registerCommand = [&commands](Command* c)->void {
+  std::map<std::string, Command *> importers;
+  auto registerCommand = [&commands, &importers](Command* c)->void {
     commands[c->name()] = c;
+
+    if (!c->imports().empty())
+      importers[c->imports()] = c;
   };
 
   registerCommand(new Command_CreateShaderModule());
   registerCommand(new Command_TestCompression());
   registerCommand(new Command_ImportMesh());
   registerCommand(new Command_ImportPhysicsMesh());
-  registerCommand(new Command_ImportTexture());
   registerCommand(new Command_CreateDefaultMaterial());
   registerCommand(new Command_CreateEmptyMaterial());
+  registerCommand(new Command_ImportTexture());
   registerCommand(new Command_ImportFont());
 
   std::vector<std::string> args;
@@ -56,20 +64,57 @@ int main(int argc, char **argv)
     return 0;
   }
 
-  auto finder = commands.find(args[1]);
-  if (finder == commands.end())
+  Command *command = nullptr;
+
+  if (args[1] == "import" && args.size() > 2)
   {
-    LogError("No such command, %s.", args[1].c_str());
-    return 2;
+    wir::XMLDocument document;
+    wir::XMLParser parser;
+    if (!parser.loadFromFile(args[2], document))
+    {
+      LogError("Failed to parse xml");
+      return 5;
+    }
+
+    auto roots = document.rootElements();
+    if (roots.size() != 1)
+    {
+      LogError("invalid import file");
+      return 7;
+    }
+
+    auto root = roots[0];
+    auto finder = importers.find(root->name());
+    if (finder == importers.end())
+    {
+      LogError("no such import entity");
+      return 8;
+    }
+
+    command = finder->second;
+
+  }
+  else 
+  {
+    auto finder = commands.find(args[1]);
+    if (finder == commands.end())
+    {
+      LogError("No such command, %s.", args[1].c_str());
+      return 2;
+    }
+
+    command = finder->second;
   }
 
-  if (args.size() != finder->second->requiredArguments())
+
+
+  if (args.size() != command->requiredArguments())
   {
-    LogError("Command %s requires %u arguments, but %u was given", args[1].c_str(), finder->second->requiredArguments(), args.size());
+    LogError("Command %s requires %u arguments, but %u was given", args[1].c_str(), command->requiredArguments(), args.size());
     return 3;
   }
 
-  if (!finder->second->execute(args))
+  if (!command->execute(args))
   {
     LogError("Command %s failed to execute.", args[1]);
     return 4;

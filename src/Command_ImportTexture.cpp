@@ -31,17 +31,6 @@ std::string const Command_ImportTexture::name() const
 
 bool Command_ImportTexture::execute(std::vector<std::string> args) const
 {
-  /*
-   *  If input is a .png:
-   *    if input lacks an .import
-   *      create an import
-   *      set input to newly created import
-   * 
-   *  execute import 
-   * 
-   */
-
-
   auto inputFile = wir::File(args[2]);
   if (!inputFile.exist())
   {

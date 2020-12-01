@@ -60,13 +60,13 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>$(Odin)\Include;$(KITEngine)extinclude\;$(KITEngine)include\;$(WIRFramework)include\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)extinclude;$(Odin)\Include;$(KITEngine)extinclude\;$(KITEngine)include\;$(WIRFramework)include\</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>BT_USE_DOUBLE_PRECISION;_ENABLE_EXTENDED_ALIGNED_STORAGE;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableSpecificWarnings>4250;4251</DisableSpecificWarnings>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(WIROutputDir)\bin\$(Configuration)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Odin.lib;KIT.Engine.lib;WIR.Framework.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)extlib-debug;$(WIROutputDir)\bin\$(Configuration)\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Odin.lib;freetype.lib;KIT.Engine.lib;WIR.Framework.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -79,15 +79,15 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>$(Odin)\Include;$(KITEngine)extinclude\;$(KITEngine)include\;$(WIRFramework)include\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)extinclude;$(Odin)\Include;$(KITEngine)extinclude\;$(KITEngine)include\;$(WIRFramework)include\</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>BT_USE_DOUBLE_PRECISION;_ENABLE_EXTENDED_ALIGNED_STORAGE;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableSpecificWarnings>4250;4251</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(WIROutputDir)\bin\$(Configuration)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Odin.lib;KIT.Engine.lib;WIR.Framework.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)extlib;$(WIROutputDir)\bin\$(Configuration)\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Odin.lib;freetype.lib;KIT.Engine.lib;WIR.Framework.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -100,6 +100,24 @@
     <ClCompile Include="src\Command_ImportTexture.cpp" />
     <ClCompile Include="src\Command_TestCompression.cpp" />
     <ClCompile Include="src\Main.cpp" />
+    <ClCompile Include="src\MSDF\core\contour-combiners.cpp" />
+    <ClCompile Include="src\MSDF\core\Contour.cpp" />
+    <ClCompile Include="src\MSDF\core\edge-coloring.cpp" />
+    <ClCompile Include="src\MSDF\core\edge-segments.cpp" />
+    <ClCompile Include="src\MSDF\core\edge-selectors.cpp" />
+    <ClCompile Include="src\MSDF\core\EdgeHolder.cpp" />
+    <ClCompile Include="src\MSDF\core\equation-solver.cpp" />
+    <ClCompile Include="src\MSDF\core\msdf-edge-artifact-patcher.cpp" />
+    <ClCompile Include="src\MSDF\core\msdf-error-correction.cpp" />
+    <ClCompile Include="src\MSDF\core\msdfgen.cpp" />
+    <ClCompile Include="src\MSDF\core\rasterization.cpp" />
+    <ClCompile Include="src\MSDF\core\render-sdf.cpp" />
+    <ClCompile Include="src\MSDF\core\Scanline.cpp" />
+    <ClCompile Include="src\MSDF\core\sdf-error-estimation.cpp" />
+    <ClCompile Include="src\MSDF\core\shape-description.cpp" />
+    <ClCompile Include="src\MSDF\core\Shape.cpp" />
+    <ClCompile Include="src\MSDF\core\SignedDistance.cpp" />
+    <ClCompile Include="src\MSDF\core\Vector2.cpp" />
     <ClCompile Include="src\stb_image.cpp" />
     <ClCompile Include="src\Utils.cpp" />
   </ItemGroup>
@@ -115,6 +133,33 @@
     <ClInclude Include="include\Command_TestCompression.hpp" />
     <ClInclude Include="include\stb_image.h" />
     <ClInclude Include="include\Utils.hpp" />
+    <ClInclude Include="src\MSDF\core\arithmetics.hpp" />
+    <ClInclude Include="src\MSDF\core\bitmap-interpolation.hpp" />
+    <ClInclude Include="src\MSDF\core\Bitmap.h" />
+    <ClInclude Include="src\MSDF\core\Bitmap.hpp" />
+    <ClInclude Include="src\MSDF\core\BitmapRef.hpp" />
+    <ClInclude Include="src\MSDF\core\contour-combiners.h" />
+    <ClInclude Include="src\MSDF\core\Contour.h" />
+    <ClInclude Include="src\MSDF\core\edge-coloring.h" />
+    <ClInclude Include="src\MSDF\core\edge-segments.h" />
+    <ClInclude Include="src\MSDF\core\edge-selectors.h" />
+    <ClInclude Include="src\MSDF\core\EdgeColor.h" />
+    <ClInclude Include="src\MSDF\core\EdgeHolder.h" />
+    <ClInclude Include="src\MSDF\core\equation-solver.h" />
+    <ClInclude Include="src\MSDF\core\msdf-edge-artifact-patcher.h" />
+    <ClInclude Include="src\MSDF\core\msdf-error-correction.h" />
+    <ClInclude Include="src\MSDF\core\pixel-conversion.hpp" />
+    <ClInclude Include="src\MSDF\core\rasterization.h" />
+    <ClInclude Include="src\MSDF\core\render-sdf.h" />
+    <ClInclude Include="src\MSDF\core\Scanline.h" />
+    <ClInclude Include="src\MSDF\core\sdf-error-estimation.h" />
+    <ClInclude Include="src\MSDF\core\shape-description.h" />
+    <ClInclude Include="src\MSDF\core\Shape.h" />
+    <ClInclude Include="src\MSDF\core\ShapeDistanceFinder.h" />
+    <ClInclude Include="src\MSDF\core\ShapeDistanceFinder.hpp" />
+    <ClInclude Include="src\MSDF\core\SignedDistance.h" />
+    <ClInclude Include="src\MSDF\core\Vector2.h" />
+    <ClInclude Include="src\MSDF\msdfgen.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="KIT.Runner.props" />
