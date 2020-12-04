@@ -58,7 +58,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalIncludeDirectories>$(ProjectDir)extinclude;$(Odin)\Include;$(KITEngine)extinclude\;$(KITEngine)include\;$(WIRFramework)include\</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>BT_USE_DOUBLE_PRECISION;_ENABLE_EXTENDED_ALIGNED_STORAGE;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -77,7 +77,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalIncludeDirectories>$(ProjectDir)extinclude;$(Odin)\Include;$(KITEngine)extinclude\;$(KITEngine)include\;$(WIRFramework)include\</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>BT_USE_DOUBLE_PRECISION;_ENABLE_EXTENDED_ALIGNED_STORAGE;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
