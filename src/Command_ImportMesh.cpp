@@ -1,10 +1,12 @@
 #include "Command_ImportMesh.hpp"
 
+#include "KXFImporter_Assimp.hpp"
+
 #include <KIT/FBX/FBXDocument.hpp>
 #include <KIT/KXF/KXFDocument.hpp>
 
 //#include <KIT/KXF/KXFImporter_KFBX.hpp>
-#include <KIT/KXF/KXFImporter_Assimp.hpp>
+
 #include <KIT/KXF/KXFMesh.hpp>
 
 #include <WIR/Filesystem.hpp>

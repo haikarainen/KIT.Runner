@@ -399,3 +399,8 @@ MigrationBackup/
 !lib/*.pdb
 
 generated/**/*.cpp
+
+extbin
+extinclude
+extlib
+extlib-debug

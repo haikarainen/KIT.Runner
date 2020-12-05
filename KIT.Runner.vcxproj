@@ -66,7 +66,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(ProjectDir)extlib-debug;$(WIROutputDir)\bin\$(Configuration)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Odin.lib;freetype.lib;KIT.Engine.lib;WIR.Framework.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Odin.lib;assimp-vc142-mdd.lib;libfbxsdk-md.lib;freetype.lib;KIT.Engine.lib;WIR.Framework.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -87,7 +87,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>$(ProjectDir)extlib;$(WIROutputDir)\bin\$(Configuration)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Odin.lib;freetype.lib;KIT.Engine.lib;WIR.Framework.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Odin.lib;assimp-vc142-md.lib;libfbxsdk-md.lib;freetype.lib;KIT.Engine.lib;WIR.Framework.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -99,6 +99,8 @@
     <ClCompile Include="src\Command_ImportPhysicsMesh.cpp" />
     <ClCompile Include="src\Command_ImportTexture.cpp" />
     <ClCompile Include="src\Command_TestCompression.cpp" />
+    <ClCompile Include="src\KXFImporter_Assimp.cpp" />
+    <ClCompile Include="src\KXFImporter_FBXSDK.cpp" />
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\MSDF\core\contour-combiners.cpp" />
     <ClCompile Include="src\MSDF\core\Contour.cpp" />
@@ -131,6 +133,8 @@
     <ClInclude Include="include\Command_ImportPhysicsMesh.hpp" />
     <ClInclude Include="include\Command_ImportTexture.hpp" />
     <ClInclude Include="include\Command_TestCompression.hpp" />
+    <ClInclude Include="include\KXFImporter_Assimp.hpp" />
+    <ClInclude Include="include\KXFImporter_FBXSDK.hpp" />
     <ClInclude Include="include\stb_image.h" />
     <ClInclude Include="include\Utils.hpp" />
     <ClInclude Include="src\MSDF\core\arithmetics.hpp" />
