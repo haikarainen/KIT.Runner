@@ -11,6 +11,12 @@ public:
   virtual bool execute(std::vector<std::string> args) const override;;
 
   virtual uint64_t requiredArguments() const override;;
+
+  virtual std::string const imports() const override
+  {
+    return "Mesh";
+  }
+
 protected:
 
 };

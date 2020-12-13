@@ -54,7 +54,7 @@ KXF::Importer_Assimp::~Importer_Assimp()
   delete m_importer;
 }
 
-void flip(glm::vec3& inVec)
+void flip(glm::vec4& inVec)
 {
   inVec = -inVec;
 }
@@ -69,13 +69,22 @@ void blenderToKxf(glm::vec3 &inVec)
 
 }
 
-void blenderToKxf(glm::vec2& inVec)
+void blenderToKxfUv(glm::vec4& inVec)
 {
 
-  glm::vec2 newVec = inVec;
+  glm::vec4 newVec = inVec;
   inVec.x = newVec.x;
   inVec.y = 1.0f-newVec.y;
 
+}
+
+void blenderToKxf(glm::vec4 &inVec)
+{
+
+  glm::vec4 newVec = inVec;
+  inVec.x = newVec.x;
+  inVec.y = -newVec.z;
+  inVec.z = newVec.y;
 }
 
 void blenderToKxf(KXF::Vertex &inVertex)
@@ -84,7 +93,10 @@ void blenderToKxf(KXF::Vertex &inVertex)
   blenderToKxf(inVertex.normal);
   blenderToKxf(inVertex.tangent);
   blenderToKxf(inVertex.position);
-  blenderToKxf(inVertex.uv);
+  blenderToKxfUv(inVertex.texCoords1);
+  blenderToKxfUv(inVertex.texCoords2);
+  blenderToKxfUv(inVertex.texCoords3);
+  blenderToKxfUv(inVertex.texCoords4);
 
   flip(inVertex.normal);
   
@@ -151,6 +163,20 @@ void KXF::Importer_Assimp::execute(aiScene const *inputScene, KXF::Document *out
 
     std::string currMeshName = currMeshPtr->mName.C_Str();
 
+    newSubmesh->vertexFlags = KXF::VF_None;
+    if (currMeshPtr->mTextureCoords[0] != nullptr)
+      newSubmesh->vertexFlags = KXF::VertexFlags(newSubmesh->vertexFlags | KXF::VF_TexCoords1);
+    if (currMeshPtr->mTextureCoords[1] != nullptr)
+      newSubmesh->vertexFlags = KXF::VertexFlags(newSubmesh->vertexFlags | KXF::VF_TexCoords2);
+    if (currMeshPtr->mTextureCoords[2] != nullptr)
+      newSubmesh->vertexFlags = KXF::VertexFlags(newSubmesh->vertexFlags | KXF::VF_TexCoords3);
+    if (currMeshPtr->mTextureCoords[3] != nullptr)
+      newSubmesh->vertexFlags = KXF::VertexFlags(newSubmesh->vertexFlags | KXF::VF_TexCoords4);
+    if (currMeshPtr->mNormals != nullptr)
+      newSubmesh->vertexFlags = KXF::VertexFlags(newSubmesh->vertexFlags | KXF::VF_Normal);
+    if (currMeshPtr->mTangents != nullptr)
+      newSubmesh->vertexFlags = KXF::VertexFlags(newSubmesh->vertexFlags | KXF::VF_Tangent);
+
     // Fill vertices
     for (unsigned int currVertex = 0; currVertex < vertexCount; currVertex++)
     {
@@ -159,16 +185,50 @@ void KXF::Importer_Assimp::execute(aiScene const *inputScene, KXF::Document *out
       currVertexData.position.x = currMeshPtr->mVertices[currVertex].x;
       currVertexData.position.y = currMeshPtr->mVertices[currVertex].y;
       currVertexData.position.z = currMeshPtr->mVertices[currVertex].z;
+      currVertexData.position.w = 1.0f;
 
       if (currMeshPtr->mTextureCoords[0] != nullptr)
       {
-        currVertexData.uv.x = currMeshPtr->mTextureCoords[0][currVertex].x;
-        currVertexData.uv.y = currMeshPtr->mTextureCoords[0][currVertex].y;
+        currVertexData.texCoords1.x = currMeshPtr->mTextureCoords[0][currVertex].x;
+        currVertexData.texCoords1.y = currMeshPtr->mTextureCoords[0][currVertex].y;
       }
       else
       {
-        currVertexData.uv.x = 0.0;
-        currVertexData.uv.y = 0.0;
+        currVertexData.texCoords1.x = 0.0;
+        currVertexData.texCoords1.y = 0.0;
+      }
+
+      if (currMeshPtr->mTextureCoords[1] != nullptr)
+      {
+        currVertexData.texCoords2.x = currMeshPtr->mTextureCoords[1][currVertex].x;
+        currVertexData.texCoords2.y = currMeshPtr->mTextureCoords[1][currVertex].y;
+      }
+      else
+      {
+        currVertexData.texCoords2.x = 0.0;
+        currVertexData.texCoords2.y = 0.0;
+      }
+
+      if (currMeshPtr->mTextureCoords[2] != nullptr)
+      {
+        currVertexData.texCoords3.x = currMeshPtr->mTextureCoords[2][currVertex].x;
+        currVertexData.texCoords3.y = currMeshPtr->mTextureCoords[2][currVertex].y;
+      }
+      else
+      {
+        currVertexData.texCoords3.x = 0.0;
+        currVertexData.texCoords3.y = 0.0;
+      }
+
+      if (currMeshPtr->mTextureCoords[3] != nullptr)
+      {
+        currVertexData.texCoords4.x = currMeshPtr->mTextureCoords[3][currVertex].x;
+        currVertexData.texCoords4.y = currMeshPtr->mTextureCoords[3][currVertex].y;
+      }
+      else
+      {
+        currVertexData.texCoords4.x = 0.0;
+        currVertexData.texCoords4.y = 0.0;
       }
 
       if (currMeshPtr->mNormals != nullptr)
@@ -224,6 +284,9 @@ void KXF::Importer_Assimp::execute(aiScene const *inputScene, KXF::Document *out
         newSubmesh->indices.push_back(currFacePtr->mIndices[2]);
       }
     }
+
+    if (newSubmesh->indices.size() < 65536)
+      newSubmesh->indexFlags = KXF::IndexFlags(newSubmesh->indexFlags | IF_Use16bit);
 
 
     // --- SKELETON STUFF BEGINS HERE
@@ -323,6 +386,9 @@ void KXF::Importer_Assimp::execute(aiScene const *inputScene, KXF::Document *out
       
       currId++;
     }
+
+    if (currId > 0)
+      newSubmesh->vertexFlags = KXF::VertexFlags(newSubmesh->vertexFlags | KXF::VF_Bones);
 
     // Add the new mesh
     LogNotice("Imported mesh %s", currMeshName.c_str());

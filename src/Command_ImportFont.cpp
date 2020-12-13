@@ -174,11 +174,6 @@ namespace
           continue;
         }
 
-        if (currChar == U'A')
-        {
-          LogNotice("UV: %f, %f, %f, %f", adder.uv.x, adder.uv.y, adder.uv.z, adder.uv.w);
-        }
-
         if (!shape.contours.empty())
         {
           shape.normalize();

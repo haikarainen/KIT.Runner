@@ -20,16 +20,30 @@ Command_CreateDefaultMaterial::~Command_CreateDefaultMaterial()
 
 std::string const Command_CreateDefaultMaterial::name() const
 {
-  return "create_default_material";
+  return "create_material";
 }
 
 bool Command_CreateDefaultMaterial::execute(std::vector<std::string> args) const
 {
-  auto importFile = args[2];
+  auto inputFile = wir::File(args[2]);
+  if (!inputFile.exist())
+  {
+    LogError("Input file does not exist!");
+    return false;
+  }
+
+  if (inputFile.extension() != ".material")
+  {
+    LogError("Input file is not a material spec");
+  }
+
+
+  auto importBase = inputFile.directory().path();
+  auto outputFile = importBase + "/" + inputFile.basename() + ".asset";
 
   wir::XMLDocument document;
   wir::XMLParser parser;
-  if(!parser.loadFromFile(importFile, document))
+  if (!parser.loadFromFile(inputFile.path(), document))
   {
     LogError("Failed to parse xml");
     return false;
@@ -44,41 +58,59 @@ bool Command_CreateDefaultMaterial::execute(std::vector<std::string> args) const
 
   auto root = roots[0];
 
-  if (root->name() != "DefaultMaterial")
+  if (root->name() != "Material")
   {
     LogError("invalid material spec");
     return false;
   }
-  std::string outputFile;
-  if(!root->string("OutputFile", outputFile))
+
+  std::string className = "kit::DefaultMaterial";
+  root->string("Class", className);
+
+
+  std::map<std::string, std::string> textures;
+  std::map<std::string, glm::vec4> vectors;
+  
+  for(auto child : root->children())
   {
-    LogError("No output file specified");
-    return false;
+    if (child->name() == "Texture")
+    {
+      std::string name;
+      std::string value;
+
+      child->string("name", name);
+      child->string("path", value);
+
+      textures[name] = value;
+    }
+    else if (child->name() == "Vector")
+    {
+      std::string name;
+      glm::dvec4 value;
+
+      child->string("name", name);
+      child->decimal("x", value.x);
+      child->decimal("y", value.y);
+      child->decimal("z", value.z);
+      child->decimal("w", value.w);
+
+      vectors[name] = value;
+    }
+
   }
-
-  auto outputFilef = wir::File(outputFile);
-  if (!outputFilef.createPath())
-  {
-    LogError("Failed to create path for output file (%s)", outputFilef.path().c_str());
-    return false;
-  }
-
-  std::string albedo, normal, metalness, occlusion, roughness;
-  root->string("Albedo", albedo);
-  root->string("Normal", normal);
-  root->string("Metalness", metalness);
-  root->string("Occlusion", occlusion);
-  root->string("Roughness", roughness);
-
-  wir::Stream instanceData;
-  instanceData << albedo << normal << metalness << occlusion << roughness;
 
   wir::Stream assetData;
-  assetData << std::string("kit::DefaultMaterial");
-  assetData << uint64_t(instanceData.size());
-  assetData.write(instanceData.begin(), instanceData.size());
+  assetData << std::string(className);
+  
+  assetData << uint64_t(textures.size());
+  for (auto tex : textures)
+    assetData << tex.first << tex.second;
 
-  if (!utils::writeAsset(outputFilef.path(), "kit::Material", assetData))
+  assetData << uint64_t(vectors.size());
+  for (auto vec : vectors)
+    assetData << vec.first << vec.second;
+
+  if (!utils::writeAsset(outputFile, "kit::Material", assetData))
   {
     LogError("writeAsset failed");
     return false;
@@ -89,5 +121,6 @@ bool Command_CreateDefaultMaterial::execute(std::vector<std::string> args) const
 
 uint64_t Command_CreateDefaultMaterial::requiredArguments() const
 {
-  return 3; // 2 + importfile
+  return 3; 
 }
+
