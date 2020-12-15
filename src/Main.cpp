@@ -127,5 +127,7 @@ int main(int argc, char **argv)
     delete c.second;
   }
 
+  //std::cin.get();
+
   return 0;
 }

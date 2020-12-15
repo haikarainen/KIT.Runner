@@ -65,7 +65,7 @@ bool Command_CreateDefaultMaterial::execute(std::vector<std::string> args) const
   }
 
   std::string className = "kit::DefaultMaterial";
-  root->string("Class", className);
+  root->string("class", className);
 
 
   std::map<std::string, std::string> textures;

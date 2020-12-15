@@ -69,6 +69,7 @@ void blenderToKxf(glm::vec3 &inVec)
 
 }
 
+
 void blenderToKxfUv(glm::vec4& inVec)
 {
 
@@ -192,21 +193,11 @@ void KXF::Importer_Assimp::execute(aiScene const *inputScene, KXF::Document *out
         currVertexData.texCoords1.x = currMeshPtr->mTextureCoords[0][currVertex].x;
         currVertexData.texCoords1.y = currMeshPtr->mTextureCoords[0][currVertex].y;
       }
-      else
-      {
-        currVertexData.texCoords1.x = 0.0;
-        currVertexData.texCoords1.y = 0.0;
-      }
 
       if (currMeshPtr->mTextureCoords[1] != nullptr)
       {
         currVertexData.texCoords2.x = currMeshPtr->mTextureCoords[1][currVertex].x;
         currVertexData.texCoords2.y = currMeshPtr->mTextureCoords[1][currVertex].y;
-      }
-      else
-      {
-        currVertexData.texCoords2.x = 0.0;
-        currVertexData.texCoords2.y = 0.0;
       }
 
       if (currMeshPtr->mTextureCoords[2] != nullptr)
@@ -214,21 +205,11 @@ void KXF::Importer_Assimp::execute(aiScene const *inputScene, KXF::Document *out
         currVertexData.texCoords3.x = currMeshPtr->mTextureCoords[2][currVertex].x;
         currVertexData.texCoords3.y = currMeshPtr->mTextureCoords[2][currVertex].y;
       }
-      else
-      {
-        currVertexData.texCoords3.x = 0.0;
-        currVertexData.texCoords3.y = 0.0;
-      }
 
       if (currMeshPtr->mTextureCoords[3] != nullptr)
       {
         currVertexData.texCoords4.x = currMeshPtr->mTextureCoords[3][currVertex].x;
         currVertexData.texCoords4.y = currMeshPtr->mTextureCoords[3][currVertex].y;
-      }
-      else
-      {
-        currVertexData.texCoords4.x = 0.0;
-        currVertexData.texCoords4.y = 0.0;
       }
 
       if (currMeshPtr->mNormals != nullptr)
@@ -237,12 +218,6 @@ void KXF::Importer_Assimp::execute(aiScene const *inputScene, KXF::Document *out
         currVertexData.normal.y = currMeshPtr->mNormals[currVertex].y;
         currVertexData.normal.z = currMeshPtr->mNormals[currVertex].z;
       }
-      else
-      {
-        currVertexData.normal.x = 0.0;
-        currVertexData.normal.y = 0.0;
-        currVertexData.normal.z = 0.0;
-      }
 
       if (currMeshPtr->mTangents != nullptr)
       {
@@ -250,22 +225,6 @@ void KXF::Importer_Assimp::execute(aiScene const *inputScene, KXF::Document *out
         currVertexData.tangent.y = currMeshPtr->mTangents[currVertex].y;
         currVertexData.tangent.z = currMeshPtr->mTangents[currVertex].z;
       }
-      else
-      {
-        currVertexData.tangent.x = 0.0;
-        currVertexData.tangent.y = 0.0;
-        currVertexData.tangent.z = 0.0;
-      }
-
-      currVertexData.bones.x = 0;
-      currVertexData.bones.y = 0;
-      currVertexData.bones.z = 0;
-      currVertexData.bones.w = 0;
-
-      currVertexData.weights.x = 0.0f;
-      currVertexData.weights.y = 0.0f;
-      currVertexData.weights.z = 0.0f;
-      currVertexData.weights.w = 0.0f;
 
       // @todo: make this optional
       blenderToKxf(currVertexData);
