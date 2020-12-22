@@ -470,7 +470,7 @@ void KXF::Importer_Assimp::execute(aiScene const *inputScene, KXF::Document *out
 
     KXF::Animation *newAnimation = new KXF::Animation();
     newAnimation->name = currAnimName;
-    newAnimation->duration = currAnimPtr->mDuration / currAnimPtr->mTicksPerSecond;
+    newAnimation->duration = currAnimPtr->mDuration / tps;
 
     outputDocument->animation(newAnimation);
 
@@ -487,14 +487,14 @@ void KXF::Importer_Assimp::execute(aiScene const *inputScene, KXF::Document *out
 
       // Position keys
       KXF::AnimationTrackVec3 *positionTrack = new KXF::AnimationTrackVec3();
-      positionTrack->name = "position";
+      positionTrack->name = "Translation";
       newAnimationChannel->tracks.push_back(positionTrack);
 
       for (uint32_t currTKey = 0; currTKey < currChannelPtr->mNumPositionKeys; currTKey++)
       {
         aiVectorKey currKey = currChannelPtr->mPositionKeys[currTKey];
         KXF::AnimationKey<glm::vec3> newKey;
-        newKey.time = currKey.mTime;
+        newKey.time = currKey.mTime / tps;
         newKey.value = glm::vec3(currKey.mValue.x, currKey.mValue.y, currKey.mValue.z);
 
         // @todo make optional
@@ -505,14 +505,14 @@ void KXF::Importer_Assimp::execute(aiScene const *inputScene, KXF::Document *out
 
       // Rotation keys
       KXF::AnimationTrackQuat *rotationTrack = new KXF::AnimationTrackQuat();
-      rotationTrack->name = "rotation";
+      rotationTrack->name = "Rotation";
       newAnimationChannel->tracks.push_back(rotationTrack);
 
       for (uint32_t currRKey = 0; currRKey < currChannelPtr->mNumRotationKeys; currRKey++)
       {
         aiQuatKey currKey = currChannelPtr->mRotationKeys[currRKey];
         KXF::AnimationKey<glm::quat> newKey;
-        newKey.time = currKey.mTime;
+        newKey.time = currKey.mTime / tps;
         newKey.value = glm::quat(currKey.mValue.w, currKey.mValue.x, currKey.mValue.y, currKey.mValue.z);
 
         // @todo make optional
@@ -524,14 +524,14 @@ void KXF::Importer_Assimp::execute(aiScene const *inputScene, KXF::Document *out
 
       // Scale keys
       KXF::AnimationTrackVec3 *scaleTrack = new KXF::AnimationTrackVec3();
-      scaleTrack->name = "scale";
+      scaleTrack->name = "Scale";
       newAnimationChannel->tracks.push_back(scaleTrack);
 
       for (uint32_t currSKey = 0; currSKey < currChannelPtr->mNumScalingKeys; currSKey++)
       {
         aiVectorKey currKey = currChannelPtr->mScalingKeys[currSKey];
         KXF::AnimationKey<glm::vec3> newKey;
-        newKey.time = currKey.mTime;
+        newKey.time = currKey.mTime / tps;
         newKey.value = glm::vec3(currKey.mValue.x, currKey.mValue.y, currKey.mValue.z);
 
         // @todo make optional
