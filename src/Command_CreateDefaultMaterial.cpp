@@ -70,6 +70,7 @@ bool Command_CreateDefaultMaterial::execute(std::vector<std::string> args) const
 
   std::map<std::string, std::string> textures;
   std::map<std::string, glm::vec4> vectors;
+  std::map<std::string, bool> booleans;
   
   for(auto child : root->children())
   {
@@ -97,6 +98,17 @@ bool Command_CreateDefaultMaterial::execute(std::vector<std::string> args) const
       vectors[name] = value;
     }
 
+    else if (child->name() == "Boolean")
+    {
+      std::string name;
+      bool value;
+
+      child->string("name", name);
+      child->boolean("value", value);
+
+      booleans[name] = value;
+    }
+
   }
 
   wir::Stream assetData;
@@ -109,6 +121,10 @@ bool Command_CreateDefaultMaterial::execute(std::vector<std::string> args) const
   assetData << uint64_t(vectors.size());
   for (auto vec : vectors)
     assetData << vec.first << vec.second;
+
+  assetData << uint64_t(booleans.size());
+  for (auto b : booleans)
+    assetData << b.first << uint8_t(b.second);
 
   if (!utils::writeAsset(outputFile, "kit::Material", assetData))
   {

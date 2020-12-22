@@ -127,7 +127,9 @@ int main(int argc, char **argv)
     delete c.second;
   }
 
-  //std::cin.get();
+  #if defined(KIT_DEBUG)
+  std::cin.get();
+  #endif
 
   return 0;
 }

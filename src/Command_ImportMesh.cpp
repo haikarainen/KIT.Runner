@@ -8,6 +8,8 @@
 //#include <KIT/KXF/KXFImporter_KFBX.hpp>
 
 #include <KIT/KXF/KXFMesh.hpp>
+#include <KIT/KXF/KXFSkeleton.hpp>
+#include <KIT/KXF/KXFAnimation.hpp>
 
 
 
@@ -212,6 +214,18 @@ bool Command_ImportMesh::execute(std::vector<std::string> args) const
       mesh->submeshes[0]->bakeToMesh(wir::format("%s/%s.asset", outputDir.c_str(), mesh->name.c_str()), vflags, iflags);
       i++;
     }
+  }
+
+  for (auto skeleton : kxfDoc->skeletons())
+  {
+    LogNotice("Exporting skeleton %s", skeleton->name.c_str());
+    skeleton->bakeToAsset(wir::format("%s/Skeleton_%s.asset", outputDir.c_str(), skeleton->name.c_str()));
+  }
+
+  for (auto animation : kxfDoc->animations())
+  {
+    LogNotice("Exporting animation %s", animation->name.c_str());
+    animation->bakeToAsset(wir::format("%s/Animation_%s.asset", outputDir.c_str(), animation->name.c_str()));
   }
 
   delete kxfDoc;

@@ -5,6 +5,10 @@
 #include <KIT/KXF/KXFAnimation.hpp>
 #include <KIT/KXF/KXFDocument.hpp>
 
+#include <WIR/Math.hpp>
+
+#include <WIR/glm/gtx/matrix_decompose.hpp>
+
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -12,8 +16,6 @@
 #include <map>
 #include <cstdint>
 #include <vector>
-
-
 
 
 
@@ -69,6 +71,15 @@ void blenderToKxf(glm::vec3 &inVec)
 
 }
 
+void blenderToKxfScale(glm::vec3 &inVec)
+{
+
+  glm::vec3 newVec = inVec;
+  inVec.x = newVec.x;
+  inVec.y = newVec.z;
+  inVec.z = newVec.y;
+}
+
 
 void blenderToKxfUv(glm::vec4& inVec)
 {
@@ -100,8 +111,8 @@ void blenderToKxf(KXF::Vertex &inVertex)
   blenderToKxfUv(inVertex.texCoords4);
 
   flip(inVertex.normal);
-  
 }
+
 
 void blenderToKxf(glm::quat &inQuat)
 {
@@ -118,10 +129,28 @@ void blenderToKxf(glm::quat &inQuat)
   //inQuat.z = -inQuat.z;
 }
 
-void blenderToKxf(glm::mat4 &inMat)
+void blenderToKxf(glm::mat4 &mat)
 {
+  glm::mat4 matrix = mat;
+  glm::vec3 scale;
+  glm::quat rotation;
+  glm::vec3 translation;
+  glm::vec3 skew;
+  glm::vec4 perspective;
+  glm::decompose(matrix, scale, rotation, translation, skew, perspective);
 
+  blenderToKxf(translation);
+  blenderToKxf(rotation);
+  blenderToKxfScale(scale);
+
+  auto r = glm::toMat4(rotation);
+  auto t = glm::translate(glm::mat4(1.0f), translation);
+  auto s = glm::scale(glm::mat4(1.f), scale);
+
+  mat = t * r * s;
 }
+
+
 
 
 void KXF::Importer_Assimp::execute(aiScene const *inputScene, KXF::Document *outputDocument)
@@ -134,7 +163,9 @@ void KXF::Importer_Assimp::execute(aiScene const *inputScene, KXF::Document *out
   */
   
   // Get the global inverse transform for the entire scene 
-  glm::mat4 globalInverseTransform = glm::inverse(glmMat4(inputScene->mRootNode->mTransformation));
+  auto git = glmMat4(inputScene->mRootNode->mTransformation);
+  blenderToKxf(git);
+  glm::mat4 globalInverseTransform = glm::inverse(git);
 
   // Temporary state holders for meshes
   std::map<std::string, KXF::Mesh*> meshes;
@@ -142,11 +173,12 @@ void KXF::Importer_Assimp::execute(aiScene const *inputScene, KXF::Document *out
   // Potentially a new skeleton
   KXF::Skeleton *newSkeleton = new KXF::Skeleton();
   std::map<KXF::Bone*, std::string> parentNames;
-  std::map<KXF::Bone*, aiBone*> assimpBoneIndex;
 
   // Iterate through all the meshes to add them
   for (unsigned int currMesh = 0; currMesh < inputScene->mNumMeshes; currMesh++)
   {
+
+    std::map<KXF::Bone *, aiBone *> assimpBoneIndex;
     KXF::Submesh *newSubmesh = new KXF::Submesh();
 
     aiMesh* currMeshPtr = inputScene->mMeshes[currMesh];
@@ -256,9 +288,14 @@ void KXF::Importer_Assimp::execute(aiScene const *inputScene, KXF::Document *out
       vertexWeightCount[i] = 0;
     }
 
+    std::map<std::string, uint32_t> meshBoneIndex;
+
     // Add bones from this mesh
     for (unsigned int currBone = 0; currBone < currMeshPtr->mNumBones; currBone++)
     {
+      if (newSkeleton->name == "")
+        newSkeleton->name = currMeshName;
+
       aiBone* currBonePtr = currMeshPtr->mBones[currBone];
       aiNode* currBoneNode = inputScene->mRootNode->FindNode(currBonePtr->mName.C_Str());
       std::string boneName = currBonePtr->mName.C_Str();
@@ -281,6 +318,10 @@ void KXF::Importer_Assimp::execute(aiScene const *inputScene, KXF::Document *out
         KXF::Bone *newBone = new KXF::Bone();
         newBone->inverseBindPose = glmMat4(currBonePtr->mOffsetMatrix);
         newBone->initialTransform = glmMat4(currBoneNode->mTransformation);
+
+        blenderToKxf(newBone->inverseBindPose);
+        blenderToKxf(newBone->initialTransform);
+
         newBone->name = boneName;
         parentNames[newBone] = parentBoneName;
 
@@ -292,6 +333,8 @@ void KXF::Importer_Assimp::execute(aiScene const *inputScene, KXF::Document *out
         }
 
         newSkeleton->boneIndex[newBone->name] = newBone;
+
+        assimpBoneIndex[newBone] = currBonePtr;
       }
     }
 
@@ -305,6 +348,8 @@ void KXF::Importer_Assimp::execute(aiScene const *inputScene, KXF::Document *out
       {
         continue;
       }
+
+      newSubmesh->boneIndex[bone->name] = currId;
 
       // Add weights from this bone to the submesh
       auto currBonePtr = assimpFinder->second;
@@ -408,6 +453,14 @@ void KXF::Importer_Assimp::execute(aiScene const *inputScene, KXF::Document *out
       currAnimName = currAnimName.substr(11);
     }
 
+    auto splitter = wir::split(currAnimName, {'|'});
+    if (splitter.size() > 1)
+    {
+      currAnimName = splitter.back();
+    }
+
+    currAnimName = meshes.begin()->first + "_" + currAnimName;
+
     double tps = currAnimPtr->mTicksPerSecond;
     if (tps == 0.0)
     {
@@ -482,7 +535,7 @@ void KXF::Importer_Assimp::execute(aiScene const *inputScene, KXF::Document *out
         newKey.value = glm::vec3(currKey.mValue.x, currKey.mValue.y, currKey.mValue.z);
 
         // @todo make optional
-        blenderToKxf(newKey.value);
+        blenderToKxfScale(newKey.value);
 
         scaleTrack->keys.push_back(newKey);
       }
