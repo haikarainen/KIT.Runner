@@ -55,7 +55,7 @@ bool Command_ImportMesh::execute(std::vector<std::string> args) const
     {
       auto inputBase = inputFile.directory().path() + "/" + inputFile.basename();
 
-      std::string importData = wir::format("<Mesh SourceFile=\"%s\" Index16=\"1\" Normal=\"1\" Tangent=\"1\" Bones=\"1\" TexCoord1=\"1\" TexCoord2=\"1\" TexCoord3=\"1\" TexCoord4=\"1\" />", inputFile.name().c_str());
+      std::string importData = wir::format("<Mesh SourceFile=\"%s\" Physics=\"1\" Skeleton=\"1\" Animations=\"1\" Index16=\"1\" Normal=\"1\" Tangent=\"1\" Bones=\"1\" TexCoord1=\"1\" TexCoord2=\"1\" TexCoord3=\"1\" TexCoord4=\"1\" />", inputFile.name().c_str());
       if (!wir::File(importFile).writeString(importData))
       {
         LogError("Failed to create import file");
@@ -146,6 +146,14 @@ bool Command_ImportMesh::execute(std::vector<std::string> args) const
   if (index16)
     globalIndexFlags = KXF::IndexFlags(globalIndexFlags | KXF::IF_Use16bit);
 
+  bool physics = true;
+  root->boolean("Physics", physics);
+
+  bool skeleton = true;
+  root->boolean("Skeleton", skeleton);
+
+  bool animations = true;
+  root->boolean("Animations", animations);
 
   std::map<std::string, std::string> mappings;
 
@@ -162,9 +170,6 @@ bool Command_ImportMesh::execute(std::vector<std::string> args) const
     }
   }
 
-  // Index16=\"1\" Normal=\"1\" Tangent=\"1\" Bones=\"1\" TexCoord1=\"1\" TexCoord2=\"1\" TexCoord3=\"1\" TexCoord4=\"1\"
-
-
   auto importer = new KXF::Importer_Assimp();
   auto kxfDoc = new KXF::Document();
 
@@ -177,6 +182,9 @@ bool Command_ImportMesh::execute(std::vector<std::string> args) const
   uint32_t i = 0;
   for (auto mesh : kxfDoc->meshes())
   {
+    if (physics)
+      mesh->generateTriangles();
+
     if (mesh->submeshes.size() > 1)
     {
       for (auto submesh : mesh->submeshes)
@@ -194,7 +202,9 @@ bool Command_ImportMesh::execute(std::vector<std::string> args) const
         submesh->materialPath = mat;
 
         LogNotice("Exporting submesh %s_%u", mesh->name.c_str(), i);
-        submesh->bakeToMesh(wir::format("%s/%s_%u.asset", outputDir.c_str(), mesh->name.c_str(), i), vflags, iflags);
+        submesh->bakeToMesh(wir::format("%s/Mesh_%s_%u.asset", outputDir.c_str(), mesh->name.c_str(), i), vflags, iflags);
+        if (physics)
+          submesh->bakeToPhysicsMesh(wir::format("%s/PhysicsMesh_%s_%u.asset", outputDir.c_str(), mesh->name.c_str(), i));
         i++;
       }
     }
@@ -211,22 +221,26 @@ bool Command_ImportMesh::execute(std::vector<std::string> args) const
       mesh->submeshes[0]->materialPath = mat;
 
       LogNotice("Exporting submesh %s", mesh->name.c_str());
-      mesh->submeshes[0]->bakeToMesh(wir::format("%s/%s.asset", outputDir.c_str(), mesh->name.c_str()), vflags, iflags);
+      mesh->submeshes[0]->bakeToMesh(wir::format("%s/Mesh_%s.asset", outputDir.c_str(), mesh->name.c_str()), vflags, iflags);
+      if (physics)
+        mesh->submeshes[0]->bakeToPhysicsMesh(wir::format("%s/PhysicsMesh_%s.asset", outputDir.c_str(), mesh->name.c_str()));
       i++;
     }
   }
 
-  for (auto skeleton : kxfDoc->skeletons())
-  {
-    LogNotice("Exporting skeleton %s", skeleton->name.c_str());
-    skeleton->bakeToAsset(wir::format("%s/Skeleton_%s.asset", outputDir.c_str(), skeleton->name.c_str()));
-  }
+  if (skeleton)
+    for (auto s : kxfDoc->skeletons())
+    {
+      LogNotice("Exporting skeleton %s", s->name.c_str());
+      s->bakeToAsset(wir::format("%s/Skeleton_%s.asset", outputDir.c_str(), s->name.c_str()));
+    }
 
-  for (auto animation : kxfDoc->animations())
-  {
-    LogNotice("Exporting animation %s", animation->name.c_str());
-    animation->bakeToAsset(wir::format("%s/Animation_%s.asset", outputDir.c_str(), animation->name.c_str()));
-  }
+  if (animations)
+    for (auto animation : kxfDoc->animations())
+    {
+      LogNotice("Exporting animation %s", animation->name.c_str());
+      animation->bakeToAsset(wir::format("%s/Animation_%s.asset", outputDir.c_str(), animation->name.c_str()));
+    }
 
   delete kxfDoc;
 

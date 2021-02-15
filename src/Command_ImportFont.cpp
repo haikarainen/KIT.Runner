@@ -1,6 +1,5 @@
 ﻿
 #include "Command_ImportFont.hpp"
-#include "MSDF/msdfgen.h"
 #include "Utils.hpp"
 
 #include <KIT/Assets/Font.hpp>
@@ -33,84 +32,8 @@ namespace
   // TODO: Should be removed and have glyph generation be completely dynamic, with better packing algorithm!
   const std::u32string glyphData = U" –ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖabcdefghijklmnopqrstuvwxyzåäö0123456789§½¶!¡\"@#£¤$%€&¥/{([)]=}?\\+`´±¨~^'´*-_.:·,;¸µ€<>|‸�";
 
-  struct FtContext
-  {
-    msdfgen::Point2 position;
-    msdfgen::Shape *shape;
-    msdfgen::Contour *contour;
-  };
 
-  msdfgen::Point2 ftPoint2(const FT_Vector &vector)
-  {
-    return msdfgen::Point2(F26DOT6_TO_DOUBLE(vector.x), F26DOT6_TO_DOUBLE(vector.y));
-  }
-
-  static FT_F26Dot6 floatToF26Dot6(float a)
-  {
-    return (FT_F26Dot6)(a * (1 << 6) + 0.5);
-  }
-
-
-  int ftMoveTo(const FT_Vector *to, void *user)
-  {
-    FtContext *context = reinterpret_cast<FtContext *>(user);
-    if (!(context->contour && context->contour->edges.empty()))
-      context->contour = &context->shape->addContour();
-    context->position = ftPoint2(*to);
-    return 0;
-  }
-
-  int ftLineTo(const FT_Vector *to, void *user)
-  {
-    FtContext *context = reinterpret_cast<FtContext *>(user);
-    msdfgen::Point2 endpoint = ftPoint2(*to);
-    if (endpoint != context->position)
-    {
-      context->contour->addEdge(new msdfgen::LinearSegment(context->position, endpoint));
-      context->position = endpoint;
-    }
-    return 0;
-  }
-
-  int ftConicTo(const FT_Vector *control, const FT_Vector *to, void *user)
-  {
-    FtContext *context = reinterpret_cast<FtContext *>(user);
-    context->contour->addEdge(new msdfgen::QuadraticSegment(context->position, ftPoint2(*control), ftPoint2(*to)));
-    context->position = ftPoint2(*to);
-    return 0;
-  }
-
-  int ftCubicTo(const FT_Vector *control1, const FT_Vector *control2, const FT_Vector *to, void *user)
-  {
-    FtContext *context = reinterpret_cast<FtContext *>(user);
-    context->contour->addEdge(new msdfgen::CubicSegment(context->position, ftPoint2(*control1), ftPoint2(*control2), ftPoint2(*to)));
-    context->position = ftPoint2(*to);
-    return 0;
-  }
-
-  bool loadGlyph(msdfgen::Shape &output, FT_Face font, FT_GlyphSlot g)
-  {
-    output.contours.clear();
-    output.inverseYAxis = false;
-
-    ::FtContext context = {};
-    context.shape = &output;
-    FT_Outline_Funcs ftFunctions;
-    ftFunctions.move_to = &ftMoveTo;
-    ftFunctions.line_to = &ftLineTo;
-    ftFunctions.conic_to = &ftConicTo;
-    ftFunctions.cubic_to = &ftCubicTo;
-    ftFunctions.shift = 0;
-    ftFunctions.delta = 0;
-    FT_Error error = FT_Outline_Decompose(&g->outline, &ftFunctions, &context);
-    if (error)
-      return false;
-    if (!output.contours.empty() && output.contours.back().edges.empty())
-      output.contours.pop_back();
-    return true;
-  }
-
-  bool generateFontData(wir::Stream &toStream, float nativeSize, std::string const &filename)
+  bool generateFontData(wir::Stream &toStream, float inSize, std::string const &filename)
   {
     FT_Library ftLibrary = FT_Library();
     if (FT_Init_FreeType(&ftLibrary))
@@ -124,29 +47,47 @@ namespace
     {
       LogError("Failed to load font from file");
     }
-
     FT_Select_Charmap(ftFace, ft_encoding_unicode);
+    FT_Set_Pixel_Sizes(ftFace, 0, (FT_UInt)inSize);
 
     std::map<uint32_t, kit::Glyph> glyphIndex;
 
-    // Determine cellsize
-    uint32_t cellSize = (uint32_t)glm::ceil(nativeSize);
-    
-    // Get the square root of the number of glyphs, to calculate the size of a square grid needed to take all glyphs
+    // First iterate through all the characters to get the max possible size
+    glm::uvec2 maxSize(0, 0);
+    for (char32_t const &currChar : glyphData)
+    {
+      if (FT_Load_Char(ftFace, currChar, FT_LOAD_RENDER) != 0)
+      {
+        LogWarning("Could not load character from font");
+        continue;
+      }
+
+      FT_GlyphSlot g = ftFace->glyph;
+
+      if (maxSize.x < g->bitmap.width)
+      {
+        maxSize.x = g->bitmap.width;
+      }
+
+      if (maxSize.y < g->bitmap.rows)
+      {
+        maxSize.y = g->bitmap.rows;
+      }
+    }
+    uint32_t cellSize = (glm::max)(maxSize.x, maxSize.y);
     uint32_t gridSize = (uint32_t)glm::ceil(glm::sqrt(float(glyphData.size())));
 
     // Calculate the total grid size in pixels
     float gridSizePx = glm::ceil(float(gridSize) * float(cellSize));
-
     uint32_t gridSizePxi = (uint32_t)gridSizePx;
     glm::uvec2 gridSizePxv = glm::uvec2(gridSizePxi, gridSizePxi);
-    std::vector<glm::vec4> data(gridSizePxi * gridSizePxi, glm::vec4{});
 
+    std::vector<glm::u8vec4> data(gridSizePxi * gridSizePxi, glm::u8vec4(255, 255, 255, 0));
     glm::vec2 currTexPos(0.0f, 0.0f);
     currTexPos.y = gridSizePx - cellSize;
     for (char32_t const &currChar : glyphData)
     {
-      if (FT_Load_Char(ftFace, currChar, FT_LOAD_NO_SCALE ) != 0)
+      if (FT_Load_Char(ftFace, currChar, FT_LOAD_RENDER) != 0)
       {
         LogError("Could not load character from font");
       }
@@ -154,45 +95,25 @@ namespace
       FT_GlyphSlot g = ftFace->glyph;
 
       kit::Glyph adder;
-      adder.size.x = cellSize;
-      adder.size.y = cellSize;
-      adder.placement.x = 0.0f;
-      adder.placement.y = 0.0f;
-      adder.advance.x = F26DOT6_TO_DOUBLE(g->advance.x);
-      adder.advance.y = F26DOT6_TO_DOUBLE(g->advance.y);
+      adder.size.x = g->bitmap.width;
+      adder.size.y = g->bitmap.rows;
+      adder.placement.x = g->bitmap_left;
+      adder.placement.y = g->bitmap_top;
+      adder.advance.x = float(g->advance.x >> 6);
+      adder.advance.y = float(g->advance.y >> 6);
 
-      if (!(adder.size.x == 0 && adder.size.y == 0))
+      if (!(g->bitmap.width == 0 && g->bitmap.rows == 0))
       {
-        adder.uv.x = ((currTexPos.x) / gridSizePx);
-        adder.uv.y = ((currTexPos.y) / gridSizePx);
+        adder.uv.x = (currTexPos.x / gridSizePx);
+        adder.uv.y = (currTexPos.y / gridSizePx);
         adder.uv.z = ((currTexPos.x + float(adder.size.x)) / gridSizePx);
         adder.uv.w = ((currTexPos.y + float(adder.size.y)) / gridSizePx);
 
-        msdfgen::Shape shape;
-        if (!::loadGlyph(shape, ftFace, g))
+        for (uint32_t ay = 0, ty = currTexPos.y; ay < adder.size.y; ay++, ty++)
         {
-          continue;
-        }
-
-        if (!shape.contours.empty())
-        {
-          shape.normalize();
-          msdfgen::edgeColoringSimple(shape, 3.0);
-          msdfgen::Bitmap<float, 4> msdf(cellSize, cellSize);
-          msdfgen::generateMTSDF(msdf, shape, 4.0, 1.0, msdfgen::Vector2(0.0, 0.0));
-
-          //if (currChar == U'K')
-          for (uint32_t x = 0; x < cellSize; x++)
+          for (uint32_t ax = 0, tx = currTexPos.x; ax < adder.size.x; ax++, tx++)
           {
-            for (uint32_t y = 0; y < cellSize; y++)
-            {
-              uint32_t offset = ((currTexPos.y + y) * gridSizePxv.x) + currTexPos.x + x;
-
-              data[offset].x = msdf(x, cellSize - y - 1)[0];
-              data[offset].y = msdf(x, cellSize - y - 1)[1];
-              data[offset].z = msdf(x, cellSize - y - 1)[2];
-              data[offset].w = msdf(x, cellSize - y - 1)[3];
-            }
+            data[ty * gridSizePxi + tx].a = g->bitmap.buffer[ay * uint32_t(adder.size.x) + ax];
           }
         }
 
@@ -224,8 +145,8 @@ namespace
       toStream << g.first << g.second.advance << g.second.placement << g.second.size << g.second.uv;
     }
 
-    toStream << nativeSize << gridSizePxv;
-    toStream.write(reinterpret_cast<uint8_t*>(data.data()), data.size() * sizeof(glm::vec4));
+    toStream << gridSizePxv << lineHeight << height;
+    toStream.write(reinterpret_cast<uint8_t const*>(data.data()), data.size() * sizeof(glm::u8vec4));
 
     
     if (FT_Done_Face(ftFace))
@@ -273,7 +194,7 @@ bool Command_ImportFont::execute(std::vector<std::string> args) const
     {
       auto inputBase = inputFile.directory().path() + "/" + inputFile.basename();
 
-      std::string importData = wir::format("<Font SourceFile=\"%s\" OutputFile=\"%s.asset\" NativeSize=\"32.0\" />", inputFile.name().c_str(), inputFile.basename().c_str());
+      std::string importData = wir::format("<Font SourceFile=\"%s\" OutputName=\"%s\" />", inputFile.name().c_str(), inputFile.basename().c_str());
       if (!wir::File(importFile).writeString(importData))
       {
         LogError("Failed to create import file");
@@ -306,13 +227,12 @@ bool Command_ImportFont::execute(std::vector<std::string> args) const
     LogError("invalid font spec");
     return false;
   }
-  std::string outputFile;
-  if (!root->string("OutputFile", outputFile))
+  std::string outputName;
+  if (!root->string("OutputName", outputName))
   {
     LogError("No output file specified");
     return false;
   }
-  auto outputFilef = wir::File(importBase + "/" + outputFile);
 
   std::string sourceFile;
   if (!root->string("SourceFile", sourceFile))
@@ -328,20 +248,25 @@ bool Command_ImportFont::execute(std::vector<std::string> args) const
     return false;
   }
 
-  double nativeSize = 32.0f;
-  root->decimal("NativeSize", nativeSize);
+  std::vector<int64_t> FontSizes = {8, 10, 12, 14, 16, 18, 24};
+  root->integerArray("FontSizes", FontSizes);
 
-  wir::Stream assetData;
-  if(!generateFontData(assetData, (float)nativeSize, sourceFilef.path()))
+  for (auto fS : FontSizes)
   {
-    LogError("Font data generation failed");
-    return false;
-  }
+    wir::Stream assetData;
+    if (!generateFontData(assetData, fS, sourceFilef.path()))
+    {
+      LogError("Font data generation failed");
+      return false;
+    }
 
-  if (!utils::writeAsset(outputFilef.path(), "kit::Font", assetData))
-  {
-    LogError("writeAsset failed");
-    return false;
+    std::string outputFilename = wir::format("%s/%s_%u.asset", importBase.c_str(), outputName.c_str(), fS);
+
+    if (!utils::writeAsset(wir::File(outputFilename).path(), "kit::Font", assetData))
+    {
+      LogError("writeAsset failed");
+      return false;
+    }
   }
 
   return true;

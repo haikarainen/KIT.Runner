@@ -162,6 +162,9 @@ void KXF::Importer_Assimp::execute(aiScene const *inputScene, KXF::Document *out
   importer.ReadFile(inputFilePath, aiProcess_CalcTangentSpace | aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_SortByPType | aiProcess_ValidateDataStructure | aiProcess_ImproveCacheLocality);
   */
   
+  double factor(0.0);
+  inputScene->mMetaData->Get("UnitScaleFactor", factor);
+
   // Get the global inverse transform for the entire scene 
   auto git = glmMat4(inputScene->mRootNode->mTransformation);
   blenderToKxf(git);
