@@ -15,8 +15,8 @@ public:
     return "Texture";
   }
 
+  virtual uint64_t requiredArguments() const override;
+  ;
 
-  virtual uint64_t requiredArguments() const override;;
 protected:
-
 };

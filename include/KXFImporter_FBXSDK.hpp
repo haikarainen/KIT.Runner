@@ -1,22 +1,22 @@
 
 #ifdef KIT_USE_FBXSDK
-#pragma once 
+#pragma once
 
 #include <KIT/Export.hpp>
 
 #include <WIR/Math.hpp>
 
-#include <vector>
 #include <set>
+#include <vector>
 
-namespace fbxsdk {
+namespace fbxsdk
+{
   class FbxManager;
   class FbxIOSettings;
   class FbxImporter;
   class FbxScene;
   class FbxCluster;
-};
-
+}; // namespace fbxsdk
 
 namespace KXF
 {
@@ -29,10 +29,9 @@ namespace KXF
     Importer_FBXSDK();
     ~Importer_FBXSDK();
 
-    void importFromFile(std::string const & fbxFilePath, KXF::Document * outputDocument);
+    void importFromFile(std::string const &fbxFilePath, KXF::Document *outputDocument);
 
   protected:
-
     void importGeometry();
     void importSkeletons();
     void importAnimations();
@@ -44,7 +43,7 @@ namespace KXF
     fbxsdk::FbxImporter *m_fbxImporter = nullptr;
     fbxsdk::FbxScene *m_fbxScene = nullptr;
 
-    std::set<fbxsdk::FbxCluster*> m_usedBones;
+    std::set<fbxsdk::FbxCluster *> m_usedBones;
   };
-}
+} // namespace KXF
 #endif

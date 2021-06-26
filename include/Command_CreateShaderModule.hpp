@@ -5,7 +5,9 @@
 class Command_CreateShaderModule : public Command
 {
 public:
-  virtual ~Command_CreateShaderModule() {}
+  virtual ~Command_CreateShaderModule()
+  {
+  }
 
   virtual std::string const name() const override;
 
@@ -13,4 +15,3 @@ public:
 
   virtual bool execute(std::vector<std::string> args) const override;
 };
-

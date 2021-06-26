@@ -2,20 +2,18 @@
 #include "Command_CreateEmptyMaterial.hpp"
 #include "Utils.hpp"
 
-#include <WIR/XML/XMLDocument.hpp>
-#include <WIR/XML/XMLParser.hpp>
-#include <WIR/XML/XMLElement.hpp>
 #include <WIR/XML/XMLAttribute.hpp>
+#include <WIR/XML/XMLDocument.hpp>
+#include <WIR/XML/XMLElement.hpp>
+#include <WIR/XML/XMLParser.hpp>
 
-#include <WIR/Filesystem.hpp>
 #include <WIR/Error.hpp>
+#include <WIR/Filesystem.hpp>
 #include <WIR/Math.hpp>
 #include <WIR/Stream.hpp>
 
-
 Command_CreateEmptyMaterial::~Command_CreateEmptyMaterial()
 {
-
 }
 
 std::string const Command_CreateEmptyMaterial::name() const
@@ -29,7 +27,7 @@ bool Command_CreateEmptyMaterial::execute(std::vector<std::string> args) const
 
   wir::XMLDocument document;
   wir::XMLParser parser;
-  if(!parser.loadFromFile(importFile, document))
+  if (!parser.loadFromFile(importFile, document))
   {
     LogError("Failed to parse xml");
     return false;
@@ -50,7 +48,7 @@ bool Command_CreateEmptyMaterial::execute(std::vector<std::string> args) const
     return false;
   }
   std::string outputFile;
-  if(!root->string("OutputFile", outputFile))
+  if (!root->string("OutputFile", outputFile))
   {
     LogError("No output file specified");
     return false;
@@ -62,7 +60,6 @@ bool Command_CreateEmptyMaterial::execute(std::vector<std::string> args) const
     LogError("No material class specified");
     return false;
   }
-
 
   auto outputFilef = wir::File(outputFile);
   if (!outputFilef.createPath())

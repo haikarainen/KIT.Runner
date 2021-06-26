@@ -6,9 +6,9 @@
 #include <SDKDDKVer.h>
 #include <Windows.h>
 
-#include <WIR/String.hpp>
 #include <WIR/Error.hpp>
 #include <WIR/Filesystem.hpp>
+#include <WIR/String.hpp>
 
 std::string utils::getVulkanSDKPath()
 {
@@ -19,7 +19,7 @@ std::string utils::getVulkanSDKPath()
   {
     std::string returner = buffer;
 
-    auto parts = wir::split(returner, { ';' });
+    auto parts = wir::split(returner, {';'});
     return parts[0];
   }
 
@@ -42,7 +42,7 @@ bool utils::writeAsset(std::string const &outputFile, std::string const &assetCl
   wir::Stream outputStream;
 
   constexpr static uint8_t magic[] = "KitAsset;)<3";
-  constexpr static size_t magicSize = sizeof(magic)-1;
+  constexpr static size_t magicSize = sizeof(magic) - 1;
   outputStream.write(magic, magicSize);
 
   // Write version

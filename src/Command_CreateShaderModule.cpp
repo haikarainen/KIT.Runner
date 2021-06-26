@@ -2,12 +2,11 @@
 
 #include "Utils.hpp"
 
-#include <WIR/Stream.hpp>
-#include <WIR/Filesystem.hpp>
-#include <WIR/Error.hpp>
-#include <WIR/String.hpp>
 #include <WIR/Async.hpp>
-
+#include <WIR/Error.hpp>
+#include <WIR/Filesystem.hpp>
+#include <WIR/Stream.hpp>
+#include <WIR/String.hpp>
 
 std::string const Command_CreateShaderModule::name() const
 {
@@ -33,7 +32,7 @@ bool Command_CreateShaderModule::execute(std::vector<std::string> args) const
 
   std::string vulkanExe = utils::getVulkanSDKPath() + "\\Bin\\glslangValidator.exe";
 
-  wir::AsyncProcess compiler(vulkanExe, { vulkanExe, "-V", "-S", type, "-o", outputSpv, inputFile.path() });
+  wir::AsyncProcess compiler(vulkanExe, {vulkanExe, "-V", "-S", type, "-o", outputSpv, inputFile.path()});
   compiler.runSynchronously();
   if (compiler.processStatus() == wir::AsyncProcessStatus::PS_Success && compiler.returnCode() != 0)
   {

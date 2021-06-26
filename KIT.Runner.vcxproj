@@ -166,6 +166,7 @@
     <ClInclude Include="src\MSDF\msdfgen.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include=".editorconfig" />
     <None Include="KIT.Runner.props" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

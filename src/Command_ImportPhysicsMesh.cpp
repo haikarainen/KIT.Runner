@@ -6,12 +6,11 @@
 #include <KIT/KXF/KXFImporter_KFBX.hpp>
 #include <KIT/KXF/KXFMesh.hpp>
 
-#include <WIR/Filesystem.hpp>
 #include <WIR/Error.hpp>
+#include <WIR/Filesystem.hpp>
 
 Command_ImportPhysicsMesh::~Command_ImportPhysicsMesh()
 {
-
 }
 
 std::string const Command_ImportPhysicsMesh::name() const
@@ -62,7 +61,6 @@ bool Command_ImportPhysicsMesh::execute(std::vector<std::string> args) const
       {
         LogNotice("Exporting submesh %s_%u", mesh->name.c_str(), i);
         submesh->bakeToPhysicsMesh(outputDir.path() + "/" + mesh->name + "PhysicsMesh_" + std::to_string(i++) + ".asset");
-        
       }
     }
     else

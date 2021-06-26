@@ -4,15 +4,15 @@
 
 #include <KIT/Assets/Font.hpp>
 
-#include <WIR/Filesystem.hpp>
 #include <WIR/Error.hpp>
+#include <WIR/Filesystem.hpp>
 #include <WIR/Math.hpp>
 #include <WIR/Stream.hpp>
 
-#include <WIR/XML/XMLDocument.hpp>
-#include <WIR/XML/XMLParser.hpp>
-#include <WIR/XML/XMLElement.hpp>
 #include <WIR/XML/XMLAttribute.hpp>
+#include <WIR/XML/XMLDocument.hpp>
+#include <WIR/XML/XMLElement.hpp>
+#include <WIR/XML/XMLParser.hpp>
 
 #include <cinttypes>
 
@@ -26,12 +26,10 @@
 namespace
 {
 
-
   // What characters to cache glyphs for. Any character not in this string will not be renderable using Kit
   // Currently contains every visible character on a standard swedish qwerty-keyboard, as well as a caret: ‸
   // TODO: Should be removed and have glyph generation be completely dynamic, with better packing algorithm!
   const std::u32string glyphData = U" –ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖabcdefghijklmnopqrstuvwxyzåäö0123456789§½¶!¡\"@#£¤$%€&¥/{([)]=}?\\+`´±¨~^'´*-_.:·,;¸µ€<>|‸�";
-
 
   bool generateFontData(wir::Stream &toStream, float inSize, std::string const &filename)
   {
@@ -146,9 +144,8 @@ namespace
     }
 
     toStream << gridSizePxv << lineHeight << height;
-    toStream.write(reinterpret_cast<uint8_t const*>(data.data()), data.size() * sizeof(glm::u8vec4));
+    toStream.write(reinterpret_cast<uint8_t const *>(data.data()), data.size() * sizeof(glm::u8vec4));
 
-    
     if (FT_Done_Face(ftFace))
     {
       LogError("Failed to release font");
@@ -164,10 +161,8 @@ namespace
 
 } // namespace
 
-
 Command_ImportFont::~Command_ImportFont()
 {
-
 }
 
 std::string const Command_ImportFont::name() const

@@ -1,36 +1,34 @@
 
 #include "Command.hpp"
-#include "Command_CreateShaderModule.hpp"
-#include "Command_TestCompression.hpp"
-#include "Command_ImportMesh.hpp"
-#include "Command_ImportPhysicsMesh.hpp"
 #include "Command_CreateDefaultMaterial.hpp"
 #include "Command_CreateEmptyMaterial.hpp"
-#include "Command_ImportTexture.hpp"
+#include "Command_CreateShaderModule.hpp"
 #include "Command_ImportFont.hpp"
-
+#include "Command_ImportMesh.hpp"
+#include "Command_ImportPhysicsMesh.hpp"
+#include "Command_ImportTexture.hpp"
+#include "Command_TestCompression.hpp"
 
 #include <KIT/Engine.hpp>
 
 #include <WIR/Error.hpp>
 
-#include <WIR/XML/XMLDocument.hpp>
-#include <WIR/XML/XMLParser.hpp>
-#include <WIR/XML/XMLElement.hpp>
 #include <WIR/XML/XMLAttribute.hpp>
+#include <WIR/XML/XMLDocument.hpp>
+#include <WIR/XML/XMLElement.hpp>
+#include <WIR/XML/XMLParser.hpp>
 
 #include <iostream>
-#include <string>
 #include <map>
+#include <string>
 #include <vector>
-
 
 int main(int argc, char **argv)
 {
 
-  std::map<std::string, Command*> commands;
+  std::map<std::string, Command *> commands;
   std::map<std::string, Command *> importers;
-  auto registerCommand = [&commands, &importers](Command* c)->void {
+  auto registerCommand = [&commands, &importers](Command *c) -> void {
     commands[c->name()] = c;
 
     if (!c->imports().empty())
@@ -92,9 +90,8 @@ int main(int argc, char **argv)
     }
 
     command = finder->second;
-
   }
-  else 
+  else
   {
     auto finder = commands.find(args[1]);
     if (finder == commands.end())
@@ -105,8 +102,6 @@ int main(int argc, char **argv)
 
     command = finder->second;
   }
-
-
 
   if (args.size() != command->requiredArguments())
   {
@@ -127,9 +122,9 @@ int main(int argc, char **argv)
     delete c.second;
   }
 
-  #if defined(KIT_DEBUG)
+#if defined(KIT_DEBUG)
   std::cin.get();
-  #endif
+#endif
 
   return 0;
 }

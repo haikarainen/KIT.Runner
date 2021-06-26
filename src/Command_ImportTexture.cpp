@@ -1,27 +1,25 @@
 #include "Command_ImportTexture.hpp"
 #include "Utils.hpp"
 
-#include <WIR/Filesystem.hpp>
 #include <WIR/Error.hpp>
+#include <WIR/Filesystem.hpp>
 #include <WIR/Math.hpp>
 #include <WIR/Stream.hpp>
 
-
-#include <WIR/XML/XMLDocument.hpp>
-#include <WIR/XML/XMLParser.hpp>
-#include <WIR/XML/XMLElement.hpp>
 #include <WIR/XML/XMLAttribute.hpp>
+#include <WIR/XML/XMLDocument.hpp>
+#include <WIR/XML/XMLElement.hpp>
+#include <WIR/XML/XMLParser.hpp>
 
-#include <Odin/Format.hpp>
-#include <Odin/Filter.hpp>
 #include <Odin/EdgeSampling.hpp>
+#include <Odin/Filter.hpp>
+#include <Odin/Format.hpp>
 
-#include <cinttypes>
 #include "stb_image.h"
+#include <cinttypes>
 
 Command_ImportTexture::~Command_ImportTexture()
 {
-
 }
 
 std::string const Command_ImportTexture::name() const
@@ -110,13 +108,13 @@ bool Command_ImportTexture::execute(std::vector<std::string> args) const
 
   bool srgb = wir::strToLower(colorspace) == "srgb";
   bool hdr = wir::strToLower(sourceFilef.extension()) == ".hdr";
-  uint32_t format = hdr ? odin::F_RGBA32_SFLOAT : srgb ? odin::F_RGBA8_SRGB : odin::F_RGBA8_UNORM;
+  uint32_t format = hdr ? odin::F_RGBA32_SFLOAT : srgb ? odin::F_RGBA8_SRGB
+                                                       : odin::F_RGBA8_UNORM;
 
   int64_t levels = 0;
   root->integer("Levels", levels);
 
   uint32_t loadLevels = glm::max(1U, (uint32_t)levels);
-
 
   std::string filter = "anisotropic";
   uint32_t filteri = odin::F_Anisotropic;
@@ -137,12 +135,11 @@ bool Command_ImportTexture::execute(std::vector<std::string> args) const
   {
     filteri = odin::F_Nearest;
   }
-  else 
+  else
   {
     LogError("Invalid filter, possible options: anisotropic, trilinear, bilinear, nearest");
     return false;
   }
-
 
   std::string es = "clamp";
   uint32_t esi = odin::ES_Clamp;
@@ -173,11 +170,9 @@ bool Command_ImportTexture::execute(std::vector<std::string> args) const
   root->decimal("MaxAnisotrophy", maxAniso);
   float maxAnisoF = glm::clamp((float)maxAniso, 1.0f, 16.0f);
 
-
   LogNotice("Colorspace: %s, Filter: %s, EdgeSampling: %s, Anisotropic level: %f", colorspace.c_str(), filter.c_str(), es.c_str(), maxAniso);
-  
-  wir::Stream assetData;
 
+  wir::Stream assetData;
 
   if (hdr)
   {
@@ -230,7 +225,7 @@ bool Command_ImportTexture::execute(std::vector<std::string> args) const
       stbi_image_free(data);
     }
   }
-  else 
+  else
   {
     int x = 0, y = 0, c = 0;
     uint8_t *data = stbi_load(sourceFilef.path().c_str(), &x, &y, &c, 4);

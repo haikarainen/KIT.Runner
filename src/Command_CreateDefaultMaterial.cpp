@@ -2,20 +2,18 @@
 #include "Command_CreateDefaultMaterial.hpp"
 #include "Utils.hpp"
 
-#include <WIR/XML/XMLDocument.hpp>
-#include <WIR/XML/XMLParser.hpp>
-#include <WIR/XML/XMLElement.hpp>
 #include <WIR/XML/XMLAttribute.hpp>
+#include <WIR/XML/XMLDocument.hpp>
+#include <WIR/XML/XMLElement.hpp>
+#include <WIR/XML/XMLParser.hpp>
 
-#include <WIR/Filesystem.hpp>
 #include <WIR/Error.hpp>
+#include <WIR/Filesystem.hpp>
 #include <WIR/Math.hpp>
 #include <WIR/Stream.hpp>
 
-
 Command_CreateDefaultMaterial::~Command_CreateDefaultMaterial()
 {
-
 }
 
 std::string const Command_CreateDefaultMaterial::name() const
@@ -36,7 +34,6 @@ bool Command_CreateDefaultMaterial::execute(std::vector<std::string> args) const
   {
     LogError("Input file is not a material spec");
   }
-
 
   auto importBase = inputFile.directory().path();
   auto outputFile = importBase + "/" + inputFile.basename() + ".asset";
@@ -67,12 +64,11 @@ bool Command_CreateDefaultMaterial::execute(std::vector<std::string> args) const
   std::string className = "kit::DefaultMaterial";
   root->string("class", className);
 
-
   std::map<std::string, std::string> textures;
   std::map<std::string, glm::vec4> vectors;
   std::map<std::string, bool> booleans;
-  
-  for(auto child : root->children())
+
+  for (auto child : root->children())
   {
     if (child->name() == "Texture")
     {
@@ -108,12 +104,11 @@ bool Command_CreateDefaultMaterial::execute(std::vector<std::string> args) const
 
       booleans[name] = value;
     }
-
   }
 
   wir::Stream assetData;
   assetData << std::string(className);
-  
+
   assetData << uint64_t(textures.size());
   for (auto tex : textures)
     assetData << tex.first << tex.second;
@@ -137,6 +132,5 @@ bool Command_CreateDefaultMaterial::execute(std::vector<std::string> args) const
 
 uint64_t Command_CreateDefaultMaterial::requiredArguments() const
 {
-  return 3; 
+  return 3;
 }
-

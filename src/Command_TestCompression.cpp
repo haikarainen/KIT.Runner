@@ -4,7 +4,6 @@
 
 Command_TestCompression::~Command_TestCompression()
 {
-
 }
 
 std::string const Command_TestCompression::name() const
@@ -14,7 +13,7 @@ std::string const Command_TestCompression::name() const
 
 bool Command_TestCompression::execute(std::vector<std::string> args) const
 {
-  std::vector<uint8_t> testData = { 0x00, 0x11, 0x44, 0x22, 0x33, 'f', 'o', 'o', 'b', 'a', 'r' };
+  std::vector<uint8_t> testData = {0x00, 0x11, 0x44, 0x22, 0x33, 'f', 'o', 'o', 'b', 'a', 'r'};
 
   wir::Stream testStream;
   testStream.write(testData.data(), testData.size());

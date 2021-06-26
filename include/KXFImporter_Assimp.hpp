@@ -1,5 +1,5 @@
 
-#pragma once 
+#pragma once
 
 #include <KIT/Export.hpp>
 
@@ -32,4 +32,4 @@ namespace KXF
   protected:
     Assimp::Importer *m_importer = nullptr;
   };
-}
+} // namespace KXF

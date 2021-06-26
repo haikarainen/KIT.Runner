@@ -7,27 +7,24 @@
 
 //#include <KIT/KXF/KXFImporter_KFBX.hpp>
 
+#include <KIT/KXF/KXFAnimation.hpp>
 #include <KIT/KXF/KXFMesh.hpp>
 #include <KIT/KXF/KXFSkeleton.hpp>
-#include <KIT/KXF/KXFAnimation.hpp>
 
-
-
-#include <WIR/XML/XMLDocument.hpp>
-#include <WIR/XML/XMLParser.hpp>
-#include <WIR/XML/XMLElement.hpp>
 #include <WIR/XML/XMLAttribute.hpp>
+#include <WIR/XML/XMLDocument.hpp>
+#include <WIR/XML/XMLElement.hpp>
+#include <WIR/XML/XMLParser.hpp>
 
-#include <WIR/Filesystem.hpp>
 #include <WIR/Error.hpp>
+#include <WIR/Filesystem.hpp>
 
 #include <assimp/Importer.hpp>
-#include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <assimp/scene.h>
 
 Command_ImportMesh::~Command_ImportMesh()
 {
-
 }
 
 std::string const Command_ImportMesh::name() const
@@ -165,7 +162,7 @@ bool Command_ImportMesh::execute(std::vector<std::string> args) const
       child->string("id", id);
       std::string path = "";
       child->string("path", path);
-      
+
       mappings[id] = path;
     }
   }
@@ -193,7 +190,7 @@ bool Command_ImportMesh::execute(std::vector<std::string> args) const
         /// Use the flags where both exist
         KXF::VertexFlags vflags = KXF::VertexFlags(submesh->vertexFlags & globalVertexFlags);
         KXF::IndexFlags iflags = KXF::IndexFlags(submesh->indexFlags & globalIndexFlags);
-        
+
         std::string mat = submesh->materialPath;
         auto f = mappings.find(mat);
         if (f != mappings.end())

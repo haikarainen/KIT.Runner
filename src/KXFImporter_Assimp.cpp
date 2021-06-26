@@ -1,25 +1,23 @@
 
 #include "KXFImporter_Assimp.hpp"
-#include <KIT/KXF/KXFSkeleton.hpp>
-#include <KIT/KXF/KXFMesh.hpp>
 #include <KIT/KXF/KXFAnimation.hpp>
 #include <KIT/KXF/KXFDocument.hpp>
+#include <KIT/KXF/KXFMesh.hpp>
+#include <KIT/KXF/KXFSkeleton.hpp>
 
 #include <WIR/Math.hpp>
 
 #include <WIR/glm/gtx/matrix_decompose.hpp>
 
 #include <assimp/Importer.hpp>
-#include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <assimp/scene.h>
 
-#include <map>
 #include <cstdint>
+#include <map>
 #include <vector>
 
-
-
-glm::mat4 glmMat4(const aiMatrix4x4 & from)
+glm::mat4 glmMat4(const aiMatrix4x4 &from)
 {
   glm::mat4 to;
   to[0][0] = from.a1;
@@ -56,7 +54,7 @@ KXF::Importer_Assimp::~Importer_Assimp()
   delete m_importer;
 }
 
-void flip(glm::vec4& inVec)
+void flip(glm::vec4 &inVec)
 {
   inVec = -inVec;
 }
@@ -68,7 +66,6 @@ void blenderToKxf(glm::vec3 &inVec)
   inVec.x = newVec.x;
   inVec.y = -newVec.z;
   inVec.z = newVec.y;
-
 }
 
 void blenderToKxfScale(glm::vec3 &inVec)
@@ -80,14 +77,12 @@ void blenderToKxfScale(glm::vec3 &inVec)
   inVec.z = newVec.y;
 }
 
-
-void blenderToKxfUv(glm::vec4& inVec)
+void blenderToKxfUv(glm::vec4 &inVec)
 {
 
   glm::vec4 newVec = inVec;
   inVec.x = newVec.x;
-  inVec.y = 1.0f-newVec.y;
-
+  inVec.y = 1.0f - newVec.y;
 }
 
 void blenderToKxf(glm::vec4 &inVec)
@@ -112,7 +107,6 @@ void blenderToKxf(KXF::Vertex &inVertex)
 
   flip(inVertex.normal);
 }
-
 
 void blenderToKxf(glm::quat &inQuat)
 {
@@ -150,9 +144,6 @@ void blenderToKxf(glm::mat4 &mat)
   mat = t * r * s;
 }
 
-
-
-
 void KXF::Importer_Assimp::execute(aiScene const *inputScene, KXF::Document *outputDocument)
 {
   /*
@@ -161,21 +152,21 @@ void KXF::Importer_Assimp::execute(aiScene const *inputScene, KXF::Document *out
   importer.SetPropertyInteger(AI_CONFIG_PP_LBW_MAX_WEIGHTS, 4);
   importer.ReadFile(inputFilePath, aiProcess_CalcTangentSpace | aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_SortByPType | aiProcess_ValidateDataStructure | aiProcess_ImproveCacheLocality);
   */
-  
+
   double factor(0.0);
   inputScene->mMetaData->Get("UnitScaleFactor", factor);
 
-  // Get the global inverse transform for the entire scene 
+  // Get the global inverse transform for the entire scene
   auto git = glmMat4(inputScene->mRootNode->mTransformation);
   blenderToKxf(git);
   glm::mat4 globalInverseTransform = glm::inverse(git);
 
   // Temporary state holders for meshes
-  std::map<std::string, KXF::Mesh*> meshes;
+  std::map<std::string, KXF::Mesh *> meshes;
 
   // Potentially a new skeleton
   KXF::Skeleton *newSkeleton = new KXF::Skeleton();
-  std::map<KXF::Bone*, std::string> parentNames;
+  std::map<KXF::Bone *, std::string> parentNames;
 
   // Iterate through all the meshes to add them
   for (unsigned int currMesh = 0; currMesh < inputScene->mNumMeshes; currMesh++)
@@ -184,7 +175,7 @@ void KXF::Importer_Assimp::execute(aiScene const *inputScene, KXF::Document *out
     std::map<KXF::Bone *, aiBone *> assimpBoneIndex;
     KXF::Submesh *newSubmesh = new KXF::Submesh();
 
-    aiMesh* currMeshPtr = inputScene->mMeshes[currMesh];
+    aiMesh *currMeshPtr = inputScene->mMeshes[currMesh];
     uint32_t vertexCount = currMeshPtr->mNumVertices;
     uint32_t triangleCount = currMeshPtr->mNumFaces;
 
@@ -282,7 +273,6 @@ void KXF::Importer_Assimp::execute(aiScene const *inputScene, KXF::Document *out
     if (newSubmesh->indices.size() < 65536)
       newSubmesh->indexFlags = KXF::IndexFlags(newSubmesh->indexFlags | IF_Use16bit);
 
-
     // --- SKELETON STUFF BEGINS HERE
     // Initialize a cache that helps us keep track of how many weights each vertex has
     std::map<uint32_t, uint32_t> vertexWeightCount;
@@ -299,8 +289,8 @@ void KXF::Importer_Assimp::execute(aiScene const *inputScene, KXF::Document *out
       if (newSkeleton->name == "")
         newSkeleton->name = currMeshName;
 
-      aiBone* currBonePtr = currMeshPtr->mBones[currBone];
-      aiNode* currBoneNode = inputScene->mRootNode->FindNode(currBonePtr->mName.C_Str());
+      aiBone *currBonePtr = currMeshPtr->mBones[currBone];
+      aiNode *currBoneNode = inputScene->mRootNode->FindNode(currBonePtr->mName.C_Str());
       std::string boneName = currBonePtr->mName.C_Str();
 
       if (!currBoneNode)
@@ -308,7 +298,7 @@ void KXF::Importer_Assimp::execute(aiScene const *inputScene, KXF::Document *out
         continue;
       }
 
-      aiNode* parentBoneNode = currBoneNode->mParent;
+      aiNode *parentBoneNode = currBoneNode->mParent;
       std::string parentBoneName = "";
       if (parentBoneNode)
       {
@@ -358,7 +348,7 @@ void KXF::Importer_Assimp::execute(aiScene const *inputScene, KXF::Document *out
       auto currBonePtr = assimpFinder->second;
       for (unsigned int currWeight = 0; currWeight < currBonePtr->mNumWeights; currWeight++)
       {
-        aiVertexWeight* currWeightPtr = &currBonePtr->mWeights[currWeight];
+        aiVertexWeight *currWeightPtr = &currBonePtr->mWeights[currWeight];
         KXF::Vertex *currVertex = &newSubmesh->vertices[currWeightPtr->mVertexId];
         switch (vertexWeightCount.at(currWeightPtr->mVertexId))
         {
@@ -390,7 +380,7 @@ void KXF::Importer_Assimp::execute(aiScene const *inputScene, KXF::Document *out
           break;
         }
       }
-      
+
       currId++;
     }
 
@@ -414,7 +404,6 @@ void KXF::Importer_Assimp::execute(aiScene const *inputScene, KXF::Document *out
       meshes.at(currMeshName)->submeshes.push_back(newSubmesh);
       newSubmesh->mesh = meshes.at(currMeshName);
     }
-
   }
 
   // Resolve the skeletons children and parent bones
@@ -435,7 +424,7 @@ void KXF::Importer_Assimp::execute(aiScene const *inputScene, KXF::Document *out
     }
   }
 
-  // Add the skeleton 
+  // Add the skeleton
   if (newSkeleton->bones.size() > 0)
   {
     LogNotice("Imported skeleton");
@@ -449,7 +438,7 @@ void KXF::Importer_Assimp::execute(aiScene const *inputScene, KXF::Document *out
   // Add any animations
   for (uint32_t currAnimation = 0; currAnimation < inputScene->mNumAnimations; currAnimation++)
   {
-    aiAnimation* currAnimPtr = inputScene->mAnimations[currAnimation];
+    aiAnimation *currAnimPtr = inputScene->mAnimations[currAnimation];
     std::string currAnimName = currAnimPtr->mName.C_Str();
     if (currAnimName.substr(0, 11) == std::string("AnimStack::"))
     {
@@ -481,9 +470,9 @@ void KXF::Importer_Assimp::execute(aiScene const *inputScene, KXF::Document *out
 
     for (uint32_t currChannel = 0; currChannel < currAnimPtr->mNumChannels; currChannel++)
     {
-      aiNodeAnim* currChannelPtr = currAnimPtr->mChannels[currChannel];
+      aiNodeAnim *currChannelPtr = currAnimPtr->mChannels[currChannel];
       std::string currChannelName = currChannelPtr->mNodeName.C_Str();
-      
+
       KXF::AnimationChannel *newAnimationChannel = new KXF::AnimationChannel();
       newAnimationChannel->name = currChannelName;
       newAnimation->channels.push_back(newAnimationChannel);
@@ -503,7 +492,7 @@ void KXF::Importer_Assimp::execute(aiScene const *inputScene, KXF::Document *out
         // @todo make optional
         blenderToKxf(newKey.value);
 
-        positionTrack->keys.push_back(newKey); 
+        positionTrack->keys.push_back(newKey);
       }
 
       // Rotation keys
@@ -520,9 +509,8 @@ void KXF::Importer_Assimp::execute(aiScene const *inputScene, KXF::Document *out
 
         // @todo make optional
         blenderToKxf(newKey.value);
- 
-        rotationTrack->keys.push_back(newKey);
 
+        rotationTrack->keys.push_back(newKey);
       }
 
       // Scale keys
@@ -543,16 +531,14 @@ void KXF::Importer_Assimp::execute(aiScene const *inputScene, KXF::Document *out
         scaleTrack->keys.push_back(newKey);
       }
     }
-
   }
 
   LogNotice("Import done!");
-
 }
 
 aiScene const *KXF::Importer_Assimp::loadScene(std::string const &filePath)
 {
-  auto assScene = m_importer->ReadFile(filePath, aiProcess_FlipWindingOrder |  aiProcess_CalcTangentSpace | aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_SortByPType | aiProcess_ValidateDataStructure | aiProcess_ImproveCacheLocality);
+  auto assScene = m_importer->ReadFile(filePath, aiProcess_FlipWindingOrder | aiProcess_CalcTangentSpace | aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_SortByPType | aiProcess_ValidateDataStructure | aiProcess_ImproveCacheLocality);
   if (!assScene)
   {
     LogError("Assimp failed: %s", m_importer->GetErrorString());
